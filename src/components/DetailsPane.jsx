@@ -78,6 +78,7 @@ export default function DetailsPane() {
             "Content-Type": "application/json",
             "X-WP-Nonce": WP_NONCE,
           },
+          credentials: "include", 
           body: JSON.stringify({
             designName: productMeta.title,
             tshirtDesigns,
