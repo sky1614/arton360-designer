@@ -1,19 +1,12 @@
 import { useState } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
 
-// Print area for saving in meta
 const PRINT = { left: 210, top: 200, width: 180, height: 280 };
 
-// Read config injected via postMessage → window.ARTON360
-const {
-  apiBase: WP_API,
-  nonce: WP_NONCE,
-  site: WP_SITE,       // optional, in case you ever need it
-  vendorId: WP_VENDOR, // optional, just kept for reference
-} =
-  typeof window !== "undefined" && window.ARTON360
-    ? window.ARTON360
-    : {};
+function getWpConfig() {
+  if (typeof window === "undefined") return {};
+  return window.ARTON360 || {};
+}
 
 export default function DetailsPane() {
   const {
@@ -33,7 +26,6 @@ export default function DetailsPane() {
       const all = c.getObjects();
       const guides = all.filter((o) => o._isGuide);
 
-      // hide guides
       guides.forEach((g) => g.set({ opacity: 0 }));
       c.discardActiveObject();
       c.renderAll();
@@ -44,13 +36,12 @@ export default function DetailsPane() {
         enableRetinaScaling: true,
       });
 
-      // restore guides
       guides.forEach((g) => g.set({ opacity: 1 }));
       c.renderAll();
 
       return png;
-    } catch (err) {
-      console.error("exportPNG failed", err);
+    } catch (e) {
+      console.error(e);
       alert("Could not create preview image.");
       return null;
     }
@@ -64,39 +55,44 @@ export default function DetailsPane() {
       return;
     }
 
-    // Ensure WordPress config arrived from parent window
-    if (!WP_API || !WP_NONCE) {
-      alert(
-        "Could not connect to WordPress (missing config). Please reload the page from the vendor dashboard."
-      );
-      return;
-    }
-
     const previewPng = exportPNG(canvas);
     if (!previewPng) return;
 
+    // 🔹 Read latest config at click time
+    const { site: WP_SITE, nonce: WP_NONCE } = getWpConfig();
+
+    if (!WP_SITE || !WP_NONCE) {
+      alert(
+        "Connection to WordPress is not ready yet. Please refresh the page and try again."
+      );
+      console.warn("[ARTON360] Missing WP config:", getWpConfig());
+      return;
+    }
+
     try {
-      const res = await fetch(`${WP_API}/arton360/v1/save-design`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-WP-Nonce": WP_NONCE,
-        },
-        body: JSON.stringify({
-          designName: productMeta.title,
-          tshirtDesigns,
-          previewPng,
-          printBox: PRINT,
-          price: 499,
-          productMeta,
-        }),
-      });
+      const res = await fetch(
+        `${WP_SITE}/wp-json/arton360/v1/save-design`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-WP-Nonce": WP_NONCE,
+          },
+          body: JSON.stringify({
+            designName: productMeta.title,
+            tshirtDesigns,
+            previewPng,
+            printBox: PRINT,
+            productMeta, // includes price, tags, artType, etc.
+          }),
+        }
+      );
 
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        console.error("Save design failed", res.status, json);
-        alert(json?.error || `Save failed (${res.status})`);
+        console.error("[ARTON360] Save failed", res.status, json);
+        alert(json?.message || `Save failed (${res.status})`);
         return;
       }
 
@@ -106,7 +102,7 @@ export default function DetailsPane() {
           : "✅ Saved for review."
       );
     } catch (err) {
-      console.error("Network error while saving design", err);
+      console.error("[ARTON360] Network error", err);
       alert("Network error while saving. Please try again.");
     }
   };
@@ -138,9 +134,7 @@ export default function DetailsPane() {
         <select
           className="w-full border px-2 py-1 mb-3"
           value={productMeta.categorySlug}
-          onChange={(e) =>
-            setProductMeta({ categorySlug: e.target.value })
-          }
+          onChange={(e) => setProductMeta({ categorySlug: e.target.value })}
         >
           <option value="tshirts">T-Shirts</option>
           <option value="hoodies">Hoodies</option>
@@ -181,11 +175,7 @@ export default function DetailsPane() {
               className="text-xs bg-gray-100 px-2 py-0.5 rounded"
             >
               {t}{" "}
-              <button
-                className="ml-1"
-                type="button"
-                onClick={() => removeTag(t)}
-              >
+              <button className="ml-1" onClick={() => removeTag(t)}>
                 ×
               </button>
             </span>

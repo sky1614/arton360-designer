@@ -1,26 +1,33 @@
-// ---- NEW: listen for config from WordPress parent ----
-if (typeof window !== 'undefined' && !window.__ARTON360_LISTENER_ATTACHED__) {
-  window.__ARTON360_LISTENER_ATTACHED__ = true;
+// main.jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
 
-  window.addEventListener('message', (event) => {
-    // OPTIONAL: lock to your WP origin
-    // if (event.origin !== 'https://arton360.com') return;
+// ===============================
+// Listen for config from WordPress
+// ===============================
+if (typeof window !== "undefined" && !window.ARTON360_LISTENER_ATTACHED) {
+  window.ARTON360_LISTENER_ATTACHED = true; // avoid duplicates on HMR
 
-    const data = event.data;
-    if (!data || data.type !== 'ARTON360_CONFIG') return;
+  window.addEventListener("message", (event) => {
+    try {
+      if (!event.data || event.data.type !== "ARTON360_CONFIG") return;
 
-    window.ARTON360 = {
-      site: data.site,        // e.g. https://arton360.com
-      apiBase: data.apiBase,  // e.g. https://arton360.com/wp-json
-      nonce: data.nonce,
-      vendorId: data.vendorId,
-    };
-
-    console.log('[ARTON360] Config received:', window.ARTON360);
+      // Save config so DetailsPane (and others) can read it
+      window.ARTON360 = event.data;
+      console.log("[ARTON360] Config received:", window.ARTON360);
+    } catch (err) {
+      console.error("[ARTON360] Error handling config message", err);
+    }
   });
 }
 
-// ---- React bootstrap ----
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <App />
-)
+// ===============================
+// Mount React App
+// ===============================
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
