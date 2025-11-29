@@ -472,6 +472,597 @@
 //   );
 // }
 
+// import { useRef, useState } from "react";
+// import WebFont from "webfontloader";
+// import { useDesignerStore } from "../state/useDesignerStore";
+// import { fitIntoBox } from "../utils/fit";
+// import PRINT from "../config/printBox"; // old chest print (still needed)
+// import { getPrintArea } from "../config/printBox"; // new helper
+
+// const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
+// const COLORS = [
+//   { name: "white", hex: "#ffffff" },
+//   { name: "black", hex: "#000000" },
+//   { name: "red", hex: "#ff0000" },
+//   { name: "gray", hex: "#808080" },
+//   { name: "navy", hex: "#1e3a8a" },
+// ];
+
+// const MAX_W = 2200;
+// const MAX_H = 3000;
+// const MAX_BATCH = 50;
+
+// export default function Toolbar() {
+//   const {
+//     canvas,
+//     activeSide, setActiveSide,
+//     activeDesignIndex, tshirtDesigns,
+//     prevDesign, nextDesign,
+//     addMultipleSame, addMultipleSeparate,
+//     setColor,
+
+//     // NEW STORE FUNCTIONS
+//     toggleFullPrintForActiveSide,
+//     isFullPrintActiveSide
+//   } = useDesignerStore();
+
+//   const fileRef = useRef(null);
+//   const [font, setFont] = useState("Poppins");
+
+//   const getDims = (url) =>
+//     new Promise((resolve) => {
+//       const img = new Image();
+//       img.onload = () =>
+//         resolve({
+//           w: img.naturalWidth || img.width,
+//           h: img.naturalHeight || img.height,
+//         });
+//       img.onerror = () => resolve({ w: 0, h: 0 });
+//       img.crossOrigin = "anonymous";
+//       img.src = url;
+//     });
+
+//   // ========= UPLOAD IMAGES =========
+//   const onUpload = async (e) => {
+//     let files = Array.from(e.target.files || []);
+//     if (!files.length) return;
+
+//     if (files.length > MAX_BATCH) {
+//       alert(`Only first ${MAX_BATCH} files will be processed.`);
+//       files = files.slice(0, MAX_BATCH);
+//     }
+
+//     const staged = await Promise.all(
+//       files.map(async (file) => {
+//         const url = URL.createObjectURL(file);
+//         const { w, h } = await getDims(url);
+//         return { file, url, w, h };
+//       })
+//     );
+
+//     const accepted = staged.filter(
+//       ({ w, h }) => w > 0 && h > 0 && w <= MAX_W && h <= MAX_H
+//     );
+
+//     if (!accepted.length) {
+//       e.target.value = "";
+//       return;
+//     }
+
+//     const items = accepted.map(({ url }) => ({ url }));
+
+//     let mode = "same";
+//     if (accepted.length > 1) {
+//       mode = window.confirm(
+//         "Put ALL artworks on SAME T-shirt?\nCancel = SEPARATE shirts."
+//       )
+//         ? "same"
+//         : "different";
+//     }
+
+//     const fm = await import("fabric");
+//     const fabric = fm.fabric || fm.default || fm;
+
+//     // SELECT BOUNDING BOX BASED ON FULL PRINT MODE
+//     const isFull = isFullPrintActiveSide();
+//     const box = getPrintArea(isFull, activeSide);
+
+//     if (mode === "same") {
+//       addMultipleSame(items);
+
+//       for (let idx = 0; idx < items.length; idx++) {
+//         const d = items[idx];
+//         await new Promise((resolve) => {
+//           fabric.Image.fromURL(
+//             d.url,
+//             (img) => {
+//               const W = img._element?.naturalWidth || img.width;
+//               const H = img._element?.naturalHeight || img.height;
+
+//               const { scale, left, top } = fitIntoBox(W, H, box, {
+//                 paddingRatio: 0.06,
+//               });
+
+//               img.set({ originX: "left", originY: "top" });
+//               img.scale(scale);
+//               img.set({
+//                 left: left + idx * 10,
+//                 top: top + idx * 10,
+//                 selectable: true,
+//               });
+
+//               img.setCoords();
+//               canvas?.add(img);
+//               canvas?.requestRenderAll();
+//               resolve(null);
+//             },
+//             { crossOrigin: "anonymous" }
+//           );
+//         });
+//       }
+//     } else {
+//       addMultipleSeparate(items.map((i) => ({ ...i })));
+//     }
+
+//     e.target.value = "";
+//   };
+
+//   // ========= ADD TEXT =========
+//   const onAddText = async () => {
+//     if (!canvas) return;
+
+//     const fm = await import("fabric");
+//     const fabric = fm.fabric || fm.default || fm;
+
+//     WebFont.load({
+//       google: { families: [font] },
+//       active: () => {
+//         const isFull = isFullPrintActiveSide();
+//         const box = getPrintArea(isFull, activeSide);
+
+//         const t = new fabric.Textbox("Add Text", {
+//           left: box.left + box.width / 2 - 80,
+//           top: box.top + box.height / 2 - 18,
+//           fontSize: 36,
+//           fontFamily: font,
+//           fill: "#000",
+//           originX: "left",
+//           originY: "top",
+//         });
+
+//         t.setCoords();
+//         canvas.add(t);
+//         canvas.setActiveObject(t);
+//         canvas.requestRenderAll();
+//       },
+//     });
+//   };
+
+//   // ========= FONT CHANGE =========
+//   const onChangeFont = (e) => {
+//     const val = e.target.value;
+//     setFont(val);
+//     const obj = canvas?.getActiveObject();
+//     if (obj && obj.type === "textbox") {
+//       WebFont.load({
+//         google: { families: [val] },
+//         active: () => {
+//           obj.set("fontFamily", val);
+//           canvas.renderAll();
+//         },
+//       });
+//     }
+//   };
+
+//   const total = tshirtDesigns.length;
+//   const fullMode = isFullPrintActiveSide();
+
+//   return (
+//     <div className="p-4 w-64 border-r border-gray-300 text-left">
+//       <h2 className="text-2xl font-bold mb-4">Tools</h2>
+
+//       {/* ===== FULL SHIRT MODE TOGGLE ===== */}
+//       <div className="mb-4">
+//         <button
+//           onClick={toggleFullPrintForActiveSide}
+//           className="px-3 py-2 rounded border"
+//           style={{
+//             background: fullMode ? "#333" : "#eee",
+//             color: fullMode ? "white" : "black",
+//           }}
+//         >
+//           {fullMode ? "Full Shirt Mode: ON" : "Full Shirt Mode: OFF"}
+//         </button>
+//         <div className="text-xs mt-1">
+//           Covers entire front/back (no sleeves)
+//         </div>
+//       </div>
+
+//       {/* ===== FRONT / BACK ===== */}
+//       <div className="mb-3">
+//         <button onClick={() => setActiveSide("front")}>Front</button>
+//         <button onClick={() => setActiveSide("back")} className="ml-2">
+//           Back
+//         </button>
+//         <div className="text-xs mt-1">Current: {activeSide}</div>
+//       </div>
+
+//       {/* ===== T-SHIRT SELECTION ===== */}
+//       <div className="mb-3">
+//         <div className="text-sm mb-1">
+//           T-shirt: {activeDesignIndex + 1} / {total}
+//         </div>
+//         <button onClick={prevDesign} disabled={activeDesignIndex === 0}>
+//           ◀ Prev
+//         </button>
+//         <button
+//           onClick={nextDesign}
+//           className="ml-2"
+//           disabled={activeDesignIndex >= total - 1}
+//         >
+//           Next ▶
+//         </button>
+//       </div>
+
+//       {/* ===== UPLOAD ===== */}
+//       <div className="mb-4">
+//         <div className="text-sm mb-1">Artwork</div>
+//         <input
+//           type="file"
+//           ref={fileRef}
+//           multiple
+//           accept="image/*"
+//           onChange={onUpload}
+//         />
+//       </div>
+
+//       {/* ===== COLOR ===== */}
+//       <div className="mb-3">
+//         <div className="text-sm mb-1">T-shirt Color</div>
+//         <div className="flex gap-2">
+//           {COLORS.map((c) => (
+//             <button
+//               key={c.name}
+//               onClick={() => setColor(c.name)}
+//               className="rounded-full border shrink-0"
+//               style={{
+//                 width: 20,
+//                 height: 20,
+//                 backgroundColor: c.hex,
+//                 borderColor: c.hex === "#ffffff" ? "#ccc" : c.hex,
+//               }}
+//             />
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* ===== TEXT ===== */}
+//       <div className="mb-4">
+//         <div className="text-sm mb-1">Font</div>
+//         <select
+//           value={font}
+//           onChange={onChangeFont}
+//           className="w-full mb-2"
+//         >
+//           {FONTS.map((f) => (
+//             <option key={f}>{f}</option>
+//           ))}
+//         </select>
+//         <button onClick={onAddText}>Add Text</button>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+// // src/components/Toolbar.jsx
+// import { useRef, useState } from "react";
+// import WebFont from "webfontloader";
+// import { useDesignerStore } from "../state/useDesignerStore";
+// import { fitIntoBox } from "../utils/fit";
+// import { getPrintArea } from "../config/printBox";
+
+// const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
+// const COLORS = [
+//   { name: "white", hex: "#ffffff" },
+//   { name: "black", hex: "#000000" },
+//   { name: "red", hex: "#ff0000" },
+//   { name: "gray", hex: "#808080" },
+//   { name: "navy", hex: "#1e3a8a" },
+// ];
+
+// const MAX_W = 2200;
+// const MAX_H = 3000;
+// const MAX_BATCH = 50;
+
+// export default function Toolbar() {
+//   const {
+//     canvas,
+//     activeSide,
+//     setActiveSide,
+//     activeDesignIndex,
+//     tshirtDesigns,
+//     prevDesign,
+//     nextDesign,
+//     addMultipleSame,
+//     addMultipleSeparate,
+//     setColor,
+
+//     // NEW STORE FUNCTIONS
+//     toggleFullPrintForActiveSide,
+//     isFullPrintActiveSide,
+//   } = useDesignerStore();
+
+//   const fileRef = useRef(null);
+//   const [font, setFont] = useState("Poppins");
+
+//   const getDims = (url) =>
+//     new Promise((resolve) => {
+//       const img = new Image();
+//       img.onload = () =>
+//         resolve({
+//           w: img.naturalWidth || img.width,
+//           h: img.naturalHeight || img.height,
+//         });
+//       img.onerror = () => resolve({ w: 0, h: 0 });
+//       img.crossOrigin = "anonymous";
+//       img.src = url;
+//     });
+
+//   // ========= BACK BUTTON HANDLER =========
+//   const handleBackClick = () => {
+//     alert("Back side editing is under development and will be available soon.");
+//     // make sure we stay on front side
+//     setActiveSide("front");
+//   };
+
+//   // ========= UPLOAD IMAGES =========
+//   const onUpload = async (e) => {
+//     let files = Array.from(e.target.files || []);
+//     if (!files.length) return;
+
+//     if (files.length > MAX_BATCH) {
+//       alert(`Only first ${MAX_BATCH} files will be processed.`);
+//       files = files.slice(0, MAX_BATCH);
+//     }
+
+//     const staged = await Promise.all(
+//       files.map(async (file) => {
+//         const url = URL.createObjectURL(file);
+//         const { w, h } = await getDims(url);
+//         return { file, url, w, h };
+//       })
+//     );
+
+//     const accepted = staged.filter(
+//       ({ w, h }) => w > 0 && h > 0 && w <= MAX_W && h <= MAX_H
+//     );
+
+//     if (!accepted.length) {
+//       e.target.value = "";
+//       return;
+//     }
+
+//     const items = accepted.map(({ url }) => ({ url }));
+
+//     let mode = "same";
+//     if (accepted.length > 1) {
+//       mode = window.confirm(
+//         "Put ALL artworks on SAME T-shirt?\nCancel = SEPARATE shirts."
+//       )
+//         ? "same"
+//         : "different";
+//     }
+
+//     const fm = await import("fabric");
+//     const fabric = fm.fabric || fm.default || fm;
+
+//     // SELECT BOUNDING BOX BASED ON FULL PRINT MODE
+//     const isFull = isFullPrintActiveSide();
+//     const box = getPrintArea(isFull, activeSide);
+
+//     if (mode === "same") {
+//       addMultipleSame(items);
+
+//       for (let idx = 0; idx < items.length; idx++) {
+//         const d = items[idx];
+//         await new Promise((resolve) => {
+//           fabric.Image.fromURL(
+//             d.url,
+//             (img) => {
+//               const W = img._element?.naturalWidth || img.width;
+//               const H = img._element?.naturalHeight || img.height;
+
+//               const { scale, left, top } = fitIntoBox(W, H, box, {
+//                 paddingRatio: 0.06,
+//               });
+
+//               img.set({ originX: "left", originY: "top" });
+//               img.scale(scale);
+//               img.set({
+//                 left: left + idx * 10,
+//                 top: top + idx * 10,
+//                 selectable: true,
+//               });
+
+//               img.setCoords();
+//               canvas?.add(img);
+//               canvas?.requestRenderAll();
+//               resolve(null);
+//             },
+//             { crossOrigin: "anonymous" }
+//           );
+//         });
+//       }
+//     } else {
+//       addMultipleSeparate(items.map((i) => ({ ...i })));
+//     }
+
+//     e.target.value = "";
+//   };
+
+//   // ========= ADD TEXT =========
+//   const onAddText = async () => {
+//     if (!canvas) return;
+
+//     const fm = await import("fabric");
+//     const fabric = fm.fabric || fm.default || fm;
+
+//     WebFont.load({
+//       google: { families: [font] },
+//       active: () => {
+//         const isFull = isFullPrintActiveSide();
+//         const box = getPrintArea(isFull, activeSide);
+
+//         const t = new fabric.Textbox("Add Text", {
+//           left: box.left + box.width / 2 - 80,
+//           top: box.top + box.height / 2 - 18,
+//           fontSize: 36,
+//           fontFamily: font,
+//           fill: "#000",
+//           originX: "left",
+//           originY: "top",
+//         });
+
+//         t.setCoords();
+//         canvas.add(t);
+//         canvas.setActiveObject(t);
+//         canvas.requestRenderAll();
+//       },
+//     });
+//   };
+
+//   // ========= FONT CHANGE =========
+//   const onChangeFont = (e) => {
+//     const val = e.target.value;
+//     setFont(val);
+//     const obj = canvas?.getActiveObject();
+//     if (obj && obj.type === "textbox") {
+//       WebFont.load({
+//         google: { families: [val] },
+//         active: () => {
+//           obj.set("fontFamily", val);
+//           canvas.renderAll();
+//         },
+//       });
+//     }
+//   };
+
+//   const total = tshirtDesigns.length;
+//   const fullMode = isFullPrintActiveSide();
+
+//   return (
+//     <div className="p-4 w-64 border-r border-gray-300 text-left">
+//       <h2 className="text-2xl font-bold mb-4">Tools</h2>
+
+//       {/* ===== FULL SHIRT MODE TOGGLE ===== */}
+//       <div className="mb-4">
+//         <button
+//           onClick={toggleFullPrintForActiveSide}
+//           className="px-3 py-2 rounded border"
+//           style={{
+//             background: fullMode ? "#333" : "#eee",
+//             color: fullMode ? "white" : "black",
+//           }}
+//         >
+//           {fullMode ? "Full Shirt Mode: ON" : "Full Shirt Mode: OFF"}
+//         </button>
+//         <div className="text-xs mt-1">
+//           Full front print only.
+//         </div>
+//       </div>
+
+//       {/* ===== FRONT / BACK ===== */}
+//       <div className="mb-3">
+//         <div className="text-sm mb-1">Side</div>
+//         <div className="flex gap-2 items-center">
+//           <button
+//             onClick={() => setActiveSide("front")}
+//             className="px-2 py-1 border rounded text-sm"
+//           >
+//             Front
+//           </button>
+//           <button
+//             onClick={handleBackClick}
+//             className="px-2 py-1 border rounded text-sm opacity-60 cursor-not-allowed"
+//           >
+//             Back (coming soon)
+//           </button>
+//         </div>
+//         <div className="text-xs mt-1 text-gray-500">
+//           Back editing coming soon.
+//         </div>
+//       </div>
+
+//       {/* ===== T-SHIRT SELECTION ===== */}
+//       <div className="mb-3">
+//         <div className="text-sm mb-1">
+//           T-shirt: {activeDesignIndex + 1} / {total}
+//         </div>
+//         <button onClick={prevDesign} disabled={activeDesignIndex === 0}>
+//           ◀ Prev
+//         </button>
+//         <button
+//           onClick={nextDesign}
+//           className="ml-2"
+//           disabled={activeDesignIndex >= total - 1}
+//         >
+//           Next ▶
+//         </button>
+//       </div>
+
+//       {/* ===== UPLOAD ===== */}
+//       <div className="mb-4">
+//         <div className="text-sm mb-1">Artwork</div>
+//         <input
+//           type="file"
+//           ref={fileRef}
+//           multiple
+//           accept="image/*"
+//           onChange={onUpload}
+//         />
+//       </div>
+
+//       {/* ===== COLOR ===== */}
+//       <div className="mb-3">
+//         <div className="text-sm mb-1">T-shirt Color</div>
+//         <div className="flex gap-2">
+//           {COLORS.map((c) => (
+//             <button
+//               key={c.name}
+//               onClick={() => setColor(c.name)}
+//               className="rounded-full border shrink-0"
+//               style={{
+//                 width: 20,
+//                 height: 20,
+//                 backgroundColor: c.hex,
+//                 borderColor: c.hex === "#ffffff" ? "#ccc" : c.hex,
+//               }}
+//             />
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* ===== TEXT ===== */}
+//       <div className="mb-4">
+//         <div className="text-sm mb-1">Font</div>
+//         <select
+//           value={font}
+//           onChange={onChangeFont}
+//           className="w-full mb-2"
+//         >
+//           {FONTS.map((f) => (
+//             <option key={f}>{f}</option>
+//           ))}
+//         </select>
+//         <button onClick={onAddText}>Add Text</button>
+//       </div>
+//     </div>
+//   );
+// }
+
+
 import { useRef, useState } from "react";
 import WebFont from "webfontloader";
 import { useDesignerStore } from "../state/useDesignerStore";
@@ -495,15 +1086,19 @@ const MAX_BATCH = 50;
 export default function Toolbar() {
   const {
     canvas,
-    activeSide, setActiveSide,
-    activeDesignIndex, tshirtDesigns,
-    prevDesign, nextDesign,
-    addMultipleSame, addMultipleSeparate,
+    activeSide,
+    setActiveSide,
+    activeDesignIndex,
+    tshirtDesigns,
+    prevDesign,
+    nextDesign,
+    addMultipleSame,
+    addMultipleSeparate,
     setColor,
 
     // NEW STORE FUNCTIONS
     toggleFullPrintForActiveSide,
-    isFullPrintActiveSide
+    isFullPrintActiveSide,
   } = useDesignerStore();
 
   const fileRef = useRef(null);
@@ -521,6 +1116,13 @@ export default function Toolbar() {
       img.crossOrigin = "anonymous";
       img.src = url;
     });
+
+  // ========= BACK BUTTON HANDLER =========
+  const handleBackClick = () => {
+    alert("Back side editing is under development and will be available soon.");
+    // keep side on front
+    setActiveSide("front");
+  };
 
   // ========= UPLOAD IMAGES =========
   const onUpload = async (e) => {
@@ -583,12 +1185,20 @@ export default function Toolbar() {
                 paddingRatio: 0.06,
               });
 
-              img.set({ originX: "left", originY: "top" });
+              img.set({
+                originX: "left",
+                originY: "top",
+                selectable: true,
+                evented: true,
+                hasControls: true,
+                hasBorders: true,
+                lockMovementX: false,
+                lockMovementY: false,
+              });
               img.scale(scale);
               img.set({
                 left: left + idx * 10,
                 top: top + idx * 10,
-                selectable: true,
               });
 
               img.setCoords();
@@ -628,6 +1238,12 @@ export default function Toolbar() {
           fill: "#000",
           originX: "left",
           originY: "top",
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
+          lockMovementX: false,
+          lockMovementY: false,
         });
 
         t.setCoords();
@@ -673,18 +1289,29 @@ export default function Toolbar() {
         >
           {fullMode ? "Full Shirt Mode: ON" : "Full Shirt Mode: OFF"}
         </button>
-        <div className="text-xs mt-1">
-          Covers entire front/back (no sleeves)
-        </div>
+        <div className="text-xs mt-1">Full front print only.</div>
       </div>
 
       {/* ===== FRONT / BACK ===== */}
       <div className="mb-3">
-        <button onClick={() => setActiveSide("front")}>Front</button>
-        <button onClick={() => setActiveSide("back")} className="ml-2">
-          Back
-        </button>
-        <div className="text-xs mt-1">Current: {activeSide}</div>
+        <div className="text-sm mb-1">Side</div>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => setActiveSide("front")}
+            className="px-2 py-1 border rounded text-sm"
+          >
+            Front
+          </button>
+          <button
+            onClick={handleBackClick}
+            className="px-2 py-1 border rounded text-sm opacity-60 cursor-not-allowed"
+          >
+            Back (coming soon)
+          </button>
+        </div>
+        <div className="text-xs mt-1 text-gray-500">
+          Back editing coming soon.
+        </div>
       </div>
 
       {/* ===== T-SHIRT SELECTION ===== */}
