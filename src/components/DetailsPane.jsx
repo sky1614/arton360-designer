@@ -473,9 +473,9 @@ export default function DetailsPane() {
             setProductMeta({ categorySlug: e.target.value })
           }
         >
-          <option value="tshirts">T-Shirts</option>
-          <option value="hoodies">Hoodies</option>
-          <option value="kids">Kids</option>
+          {/* Make sure these slugs match Products → Categories in WP */}
+          <option value="tshirts">T-shirt</option>
+          <option value="tshirts">Graphic T-shirt</option>
         </select>
 
         {/* Art Type */}
