@@ -19,14 +19,12 @@ const getDims = (url) =>
 
 export async function uploadFilesToCanvas({
   files,
-  canvas,
-  addMultipleSame,
+  canvas, // unused for Option A, kept so TeePublicApp doesn't break
+  addMultipleSame, // unused for Option A
   addMultipleSeparate,
 }) {
-  if (!canvas) return;
-
   let list = Array.from(files || []);
-  if (!list.length) return;
+  if (!list.length) return { ok: false, reason: "NO_FILES" };
 
   if (list.length > MAX_BATCH) {
     alert(`Only first ${MAX_BATCH} files will be processed.`);
@@ -41,76 +39,86 @@ export async function uploadFilesToCanvas({
     })
   );
 
-  const accepted = staged.filter(
-    ({ w, h }) => w > 0 && h > 0 && w >= MAX_W && h >= MAX_H
-  );
+  const accepted = staged.filter(({ w, h }) => w > 0 && h > 0);
 
-  if (!accepted.length) return;
+  if (!accepted.length) {
+    alert("Could not read image dimensions. Try a different file.");
+    return { ok: false, reason: "BAD_IMAGES" };
+  }
 
   const items = accepted.map(({ url }) => ({ url }));
 
-  let mode = "same";
-  if (accepted.length > 1) {
-    mode = window.confirm(
-      "Put ALL artworks on SAME product?\nCancel = SEPARATE products."
-    )
-      ? "same"
-      : "different";
-  }
+  // ✅ Option A: ALWAYS create separate Standard T-shirts
+  addMultipleSeparate(items);
 
-  const fm = await import("fabric");
-  const fabric = fm.fabric || fm.default || fm;
-
-  // ✅ IMPORTANT: always use the real print area already computed by CanvasArea
-  const box = canvas.__printArea;
-  if (!box) {
-    alert("Print area not ready yet. Try again in a second.");
-    return;
-  }
-
-  if (mode === "same") {
-    addMultipleSame(items);
-
-    for (let idx = 0; idx < items.length; idx++) {
-      const d = items[idx];
-      await new Promise((resolve) => {
-        fabric.Image.fromURL(
-          d.url,
-          (img) => {
-            const W = img._element?.naturalWidth || img.width;
-            const H = img._element?.naturalHeight || img.height;
-
-            const { scale, left, top } = fitIntoBox(W, H, box, {
-              paddingRatio: 0.06,
-            });
-
-            img.set({
-              originX: "left",
-              originY: "top",
-              selectable: true,
-              evented: true,
-              hasControls: true,
-              hasBorders: true,
-              lockMovementX: false,
-              lockMovementY: false,
-            });
-
-            img.scale(scale);
-            img.set({
-              left: left + idx * 10,
-              top: top + idx * 10,
-            });
-
-            img.setCoords();
-            canvas.add(img);
-            canvas.requestRenderAll();
-            resolve(null);
-          },
-          { crossOrigin: "anonymous" }
-        );
-      });
-    }
-  } else {
-    addMultipleSeparate(items.map((i) => ({ ...i })));
-  }
+  return { ok: true };
 }
+
+
+//   let mode = "same";
+//   if (accepted.length > 1) {
+//     mode = window.confirm(
+//       "Put ALL artworks on SAME product?\nCancel = SEPARATE products."
+//     )
+//       ? "same"
+//       : "different";
+//   }
+
+//   const fm = await import("fabric");
+//   const fabric = fm.fabric || fm.default || fm;
+
+//   // ✅ IMPORTANT: always use the real print area already computed by CanvasArea
+//   const box = canvas.__printArea;
+//   if (!box) {
+//     // IMPORTANT: don't alert here. Caller will retry.
+//     return { ok: false, reason: "PRINT_AREA_NOT_READY" };
+//   }
+
+
+//   if (mode === "same") {
+//     addMultipleSame(items);
+
+//     for (let idx = 0; idx < items.length; idx++) {
+//       const d = items[idx];
+//       await new Promise((resolve) => {
+//         fabric.Image.fromURL(
+//           d.url,
+//           (img) => {
+//             const W = img._element?.naturalWidth || img.width;
+//             const H = img._element?.naturalHeight || img.height;
+
+//             const { scale, left, top } = fitIntoBox(W, H, box, {
+//               paddingRatio: 0.06,
+//             });
+
+//             img.set({
+//               originX: "left",
+//               originY: "top",
+//               selectable: true,
+//               evented: true,
+//               hasControls: true,
+//               hasBorders: true,
+//               lockMovementX: false,
+//               lockMovementY: false,
+//             });
+
+//             img.scale(scale);
+//             img.set({
+//               left: left + idx * 10,
+//               top: top + idx * 10,
+//             });
+
+//             img.setCoords();
+//             canvas.add(img);
+//             canvas.requestRenderAll();
+//             resolve(null);
+//           },
+//           { crossOrigin: "anonymous" }
+//         );
+//       });
+//     }
+//   } else {
+//     addMultipleSeparate(items.map((i) => ({ ...i })));
+//   }
+//   return { ok: true };
+//}

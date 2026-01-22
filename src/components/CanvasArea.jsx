@@ -354,7 +354,7 @@ export default function CanvasArea() {
         canvasRef.current.style.pointerEvents = "auto";
       }
       if (c) {
-        try { c.upperCanvasEl?.remove(); } catch { }
+        //try { c.upperCanvasEl?.remove(); } catch { }
         // c.off("mouse:down", mouseDownHandler);
         // c.off("mouse:move", mouseMoveHandler);
         // c.off("mouse:up", mouseUpHandler);

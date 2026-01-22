@@ -43,6 +43,12 @@ export default function ProductRow() {
 
 
     const [font, setFont] = useState("Poppins");
+    const [colorFilter, setColorFilter] = useState("all"); // all | light | dark
+    const filteredColors = regularColors.filter((c) => {
+        if (colorFilter === "all") return true;
+        return (c.tone || "all") === colorFilter;
+    });
+
     const activeProductType = activeDesign?.productType || "tshirts";
 
     // ----------- TOOLS (Copied from Sidebar) -----------
@@ -236,17 +242,43 @@ export default function ProductRow() {
 
                 {/* COLOR GRID (Bottom Area) */}
                 <div className="mt-8 pt-6 border-t border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="font-bold text-gray-700">Product Colors</div>
-                        <div className="flex gap-2">
-                            <button className="px-3 py-1 text-xs bg-blue-600 text-white rounded">All</button>
-                            <button className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded">Light</button>
-                            <button className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded">Dark</button>
-                        </div>
-                    </div>
+                <div className="flex items-center justify-between mb-2">
+                    <div className="font-bold text-gray-700">Product Colors</div>
+                </div>
+
+                {/* Filters moved right above palette */}
+                <div className="flex gap-2 mb-4">
+                    <button
+                        onClick={() => setColorFilter("all")}
+                        className={`px-3 py-1 text-xs rounded ${
+                        colorFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
+                        }`}
+                    >
+                    All
+                    </button>
+
+                    <button
+                        onClick={() => setColorFilter("light")}
+                        className={`px-3 py-1 text-xs rounded ${
+                        colorFilter === "light" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
+                        }`}
+                    >
+                        Light
+                    </button>
+
+                    <button
+                        onClick={() => setColorFilter("dark")}
+                        className={`px-3 py-1 text-xs rounded ${
+                        colorFilter === "dark" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
+                        }`}
+                    >
+                        Dark
+                    </button>
+                </div>
+
 
                     <div className="flex flex-wrap gap-2">
-                        {regularColors.map((c) => (
+                        {filteredColors.map((c) => (
                             <button
                                 key={c.key}
                                 onClick={() => setColor(c.key)}

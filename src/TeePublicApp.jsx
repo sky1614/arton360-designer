@@ -9,18 +9,38 @@ import DesignNav from "./components/DesignNav";
 
 export default function TeePublicApp() {
     const fileRef = useRef(null);
-    const { canvas, addMultipleSame, addMultipleSeparate } = useDesignerStore();
+
+    const { canvas, addMultipleSame, addMultipleSeparate, tshirtDesigns, activeDesignIndex } = useDesignerStore();
+    const active = tshirtDesigns?.[activeDesignIndex];
+    const activeSide = active?.sides?.front;
+    const previewUrl =
+        activeSide?.designs?.find((d) => d?.type === "image" && d?.url)?.url || null;
+
     const onPick = () => fileRef.current?.click();
     const onFilesSelected = async (e) => {
         const files = e.target.files;
-        await uploadFilesToCanvas({
-            files,
-            canvas,
-            addMultipleSame,
-            addMultipleSeparate,
-        });
+        const attemptUpload = async (triesLeft = 10) => {
+            const res = await uploadFilesToCanvas({
+                files,
+                canvas,
+                addMultipleSame,
+                addMultipleSeparate,
+            });
+
+            if (res?.ok) return;
+
+            if (res?.reason === "PRINT_AREA_NOT_READY" && triesLeft > 0) {
+                setTimeout(() => attemptUpload(triesLeft - 1), 250);
+                return;
+            }
+
+            alert("Upload failed. Canvas not ready.");
+        };
+
+        attemptUpload();
         e.target.value = "";
     };
+
 
     return (
         <div className="min-h-screen bg-slate-200">
@@ -34,14 +54,7 @@ export default function TeePublicApp() {
                 </div>
                 <Button
                     className="ml-6 bg-[#6c85e3] hover:bg-[#5b73d1] text-white font-bold"
-                    onClick={() => {
-                        if (!canvas) {
-                        alert("Canvas is still loading. Please wait 1–2 seconds and try again.");
-                        return;
-                        }
-                        onPick();
-                    }}
-                    disabled={!canvas}
+                    onClick={onPick}
                 >
                 Upload Art
                 </Button>
@@ -71,21 +84,33 @@ export default function TeePublicApp() {
              For us, we can show a placeholder or the "Upload Art" dropzone if empty.
          */}
                 <div className="flex justify-center mb-10">
-                    <div className="w-[300px] h-[300px] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-white border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center p-4 text-center">
-                        <div className="text-6xl text-gray-300 mb-2">🖼️</div>
-                        <div className="text-gray-400 text-sm font-medium">Your Artwork Preview</div>
+                    <div className="w-[300px] h-[300px] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-white border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center p-4 text-center overflow-hidden">
+                        {previewUrl ? (
+                        <img
+                            src={previewUrl}
+                            alt="Artwork Preview"
+                            className="w-full h-full object-contain"
+                        />
+                        ) : (
+                        <>
+                            <div className="text-6xl text-gray-300 mb-2">🖼️</div>
+                            <div className="text-gray-400 text-sm font-medium">
+                            Your Artwork Preview
+                            </div>
+                        </>
+                        )}
                     </div>
                 </div>
+
 
                 {/* 3. DESIGN DETAILS FORM (Gray Box) */}
                 <DesignDetailsForm />
 
                 {/* DESIGN NAV (for multiple uploads) */}
-                <DesignNav />
+                {tshirtDesigns.length > 0 ? <DesignNav /> : null}
 
                 {/* 4. PRODUCT ROW (White Box with Canvas) */}
-                <ProductRow />
-
+                {tshirtDesigns.length > 0 ? <ProductRow /> : null}
             </div>
         </div>
     );

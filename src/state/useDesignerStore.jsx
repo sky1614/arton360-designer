@@ -37,6 +37,33 @@ const REGULAR_COLORS = [
   { key: "daisy", file: "daisy.png", hex: "#FFD100", label: "Daisy" },
   { key: "azalea", file: "azalea.png", hex: "#FF66B2", label: "Azalea" },
   { key: "brown-savanna", file: "brown-savanna.png", hex: "#6B3F2A", label: "Brown Savanna" },
+  // ✅ NEW COLORS (add mockups in /public/mockups/ with these filenames)
+  { key: "ash", file: "ash.png", hex: "#d6d6d6", label: "Ash", tone: "light" },
+  { key: "carolina-blue", file: "carolina-blue.png", hex: "#66aee8", label: "Carolina Blue", tone: "light" },
+  { key: "dark-chocolate", file: "dark-chocolate.png", hex: "#3b2616", label: "Dark Chocolate", tone: "dark" },
+  { key: "forest-green", file: "forest-green.png", hex: "#0b3d2e", label: "Forest Green", tone: "dark" },
+  { key: "gold", file: "gold.png", hex: "#f2c100", label: "Gold", tone: "light" },
+  { key: "graphite-heather", file: "graphite-heather.png", hex: "#6b6f74", label: "Graphite Heather", tone: "dark" },
+  { key: "heliconia", file: "heliconia.png", hex: "#ff2ea6", label: "Heliconia", tone: "light" },
+  { key: "ice-grey", file: "ice-grey.png", hex: "#e8eaed", label: "Ice Grey", tone: "light" },
+  { key: "irish-green", file: "irish-green.png", hex: "#00a651", label: "Irish Green", tone: "light" },
+  { key: "light-blue", file: "light-blue.png", hex: "#b7d9f7", label: "Light Blue", tone: "light" },
+  { key: "light-pink", file: "light-pink.png", hex: "#ffd1dc", label: "Light Pink", tone: "light" },
+  { key: "lime", file: "lime.png", hex: "#b7e300", label: "Lime", tone: "light" },
+  { key: "maroon", file: "maroon.png", hex: "#5a0f1b", label: "Maroon", tone: "dark" },
+  { key: "military-green", file: "military-green.png", hex: "#4b5d3a", label: "Military Green", tone: "dark" },
+  { key: "natural", file: "natural.png", hex: "#f1e4cf", label: "Natural", tone: "light" },
+  { key: "navy", file: "navy.png", hex: "#0b1f3a", label: "Navy", tone: "dark" },
+  { key: "orange", file: "orange.png", hex: "#ff7a00", label: "Orange", tone: "light" },
+  { key: "red", file: "red.png", hex: "#d0021b", label: "Red", tone: "dark" },
+  { key: "royal", file: "royal.png", hex: "#1f4ed8", label: "Royal", tone: "dark" },
+  { key: "sand", file: "sand.png", hex: "#d9c6a5", label: "Sand", tone: "light" },
+  { key: "sapphire", file: "sapphire.png", hex: "#0f52ba", label: "Sapphire", tone: "dark" },
+  { key: "sky", file: "sky.png", hex: "#87ceeb", label: "Sky", tone: "light" },
+  { key: "sport-grey", file: "sport-grey.png", hex: "#c9c9c9", label: "Sport Grey", tone: "light" },
+  { key: "tropical-blue", file: "tropical-blue.png", hex: "#00a6d6", label: "Tropical Blue", tone: "light" },
+  { key: "turf-green", file: "turf-green.png", hex: "#2e8b57", label: "Turf Green", tone: "dark" },
+  { key: "yellow-haze", file: "yellow-haze.png", hex: "#f7e36d", label: "Yellow Haze", tone: "light" }
 ];
 
 const regularMockupFront = (colorKey) => {
@@ -173,14 +200,17 @@ export const useDesignerStore = create((set, get) => ({
 
 
   // ====== Per-design listing metadata (1 meta per shirt) ======
-  designMetas: [/*createEmptyMeta()*/],
+  designMetas: [],
 
   // ====== Active Design Index Handling ======
   activeDesignIndex: 0,
 
   setActiveDesignIndex: (i) =>
     set((state) => {
-      const max = state.tshirtDesigns.length - 1;
+      const count = state.tshirtDesigns.length;
+      if (count === 0) return { activeDesignIndex: 0, designMetas: [] };
+
+      const max = count - 1;
       const clamped = Math.max(0, Math.min(i, max));
 
       const metas = [...state.designMetas];
@@ -192,13 +222,17 @@ export const useDesignerStore = create((set, get) => ({
       return { activeDesignIndex: clamped, designMetas: metas };
     }),
 
+
   nextDesign: () =>
     set((state) => {
       const total = state.tshirtDesigns.length;
-      const i = state.activeDesignIndex;
-      if (i >= total - 1) return {};
+      if (total === 0) return {};
 
-      const newIndex = i + 1;
+      const current = state.activeDesignIndex ?? 0;
+      if (current >= total - 1) return {};
+
+      const newIndex = current + 1;
+
       const metas = [...state.designMetas];
       if (!metas[newIndex]) {
         const pt = state.tshirtDesigns?.[newIndex]?.productType || "tshirts";
@@ -210,14 +244,18 @@ export const useDesignerStore = create((set, get) => ({
 
   prevDesign: () =>
     set((state) => {
-      const i = state.activeDesignIndex;
-      if (i <= 0) return {};
+      const total = state.tshirtDesigns.length;
+      if (total === 0) return {};
 
-      const newIndex = i - 1;
+      const current = state.activeDesignIndex ?? 0;
+      if (current <= 0) return {};
+
+      const newIndex = current - 1;
+
       const metas = [...state.designMetas];
       if (!metas[newIndex]) {
-        const base = metas[i] || createEmptyMeta();
-        metas[newIndex] = { ...base };
+        const pt = state.tshirtDesigns?.[newIndex]?.productType || "tshirts";
+        metas[newIndex] = createEmptyMeta(pt);
       }
 
       return { activeDesignIndex: newIndex, designMetas: metas };
