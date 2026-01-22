@@ -1,304 +1,5 @@
-// import { useState } from "react";
-// import { useDesignerStore } from "../state/useDesignerStore";
-
-// const PRINT = { left: 210, top: 200, width: 180, height: 280 };
-
-// function getWpConfig() {
-//   if (typeof window === "undefined") return {};
-//   return window.ARTON360 || {};
-// }
-
-// export default function DetailsPane() {
-//   const {
-//     canvas,
-//     tshirtDesigns,
-//     productMeta,
-//     setProductMeta,
-//     addTag,
-//     removeTag,
-//     isMetaValid,
-//     activeDesignIndex,
-//   } = useDesignerStore();
-
-//   const [tagInput, setTagInput] = useState("");
-
-//   function exportPNG(c) {
-//     try {
-//       const all = c.getObjects();
-//       const guides = all.filter((o) => o._isGuide);
-
-//       // hide guides
-//       guides.forEach((g) => g.set({ opacity: 0 }));
-//       c.discardActiveObject();
-//       c.renderAll();
-
-//       const png = c.toDataURL({
-//         format: "png",
-//         multiplier: 2,
-//         enableRetinaScaling: true,
-//       });
-
-//       // restore guides
-//       guides.forEach((g) => g.set({ opacity: 1 }));
-//       c.renderAll();
-
-//       return png;
-//     } catch (e) {
-//       console.error(e);
-//       alert("Could not create preview image.");
-//       return null;
-//     }
-//   }
-
-//   const onSave = async () => {
-//     if (!canvas) return;
-
-//     if (!isMetaValid()) {
-//       alert("Please add Title and Category.");
-//       return;
-//     }
-
-//     const previewPng = exportPNG(canvas);
-//     if (!previewPng) return;
-
-//     // 🔹 Read latest config at click time
-//     const { site: WP_SITE, nonce: WP_NONCE } = getWpConfig();
-
-//     if (!WP_SITE || !WP_NONCE) {
-//       alert(
-//         "Connection to WordPress is not ready yet. Please refresh the page and try again."
-//       );
-//       console.warn("[ARTON360] Missing WP config:", getWpConfig());
-//       return;
-//     }
-
-//     // 🔹 Only send the ACTIVE design, not all of them
-//     const activeIndex =
-//       typeof activeDesignIndex === "number" ? activeDesignIndex : 0;
-//     const activeDesign = tshirtDesigns?.[activeIndex];
-
-//     if (!activeDesign) {
-//       alert("No active design found to save.");
-//       console.warn("[ARTON360] No active design at index", activeIndex);
-//       return;
-//     }
-
-//     try {
-//       const res = await fetch(
-//         `${WP_SITE}/wp-json/arton360/v1/save-design`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             "X-WP-Nonce": WP_NONCE,
-//           },
-//           credentials: "include",
-//           body: JSON.stringify({
-//             designName: productMeta.title,
-//             // Only this design is sent to WP
-//             tshirtDesigns: [activeDesign],
-//             previewPng,
-//             printBox: PRINT,
-//             // 🔹 Send listing details (title, category, price, tags, mature, currency, etc.)
-//             productMeta,
-//           }),
-//         }
-//       );
-
-//       const json = await res.json().catch(() => ({}));
-
-//       if (!res.ok) {
-//         console.error("[ARTON360] Save failed", res.status, json);
-//         alert(json?.message || `Save failed (${res.status})`);
-//         return;
-//       }
-
-//       alert(
-//         json.status === "publish"
-//           ? "✅ Published on the store!"
-//           : "✅ Saved (status: " + json.status + ")"
-//       );
-//     } catch (err) {
-//       console.error("[ARTON360] Network error", err);
-//       alert("Network error while saving. Please try again.");
-//     }
-//   };
-
-//   const commitTag = () => {
-//     const raw = tagInput.trim();
-//     if (!raw) return;
-//     raw.split(",").forEach((t) => addTag(t));
-//     setTagInput("");
-//   };
-
-//   // ---- Price + Currency helpers ----
-//   const currency = productMeta.currency || "USD"; // default USD now
-//   const priceValue =
-//     typeof productMeta.price === "number" || typeof productMeta.price === "string"
-//       ? productMeta.price
-//       : "";
-//   const currencySymbol = "$"; // always show dollar
-
-//   const isMature = !!productMeta.vendorMatureFlag;
-
-//   return (
-//     <div className="p-6">
-//       {/* left align title */}
-//       <h2 className="text-2xl font-bold mb-4 text-left">Listing Details</h2>
-
-//       {/* constrain all controls to a tidy column */}
-//       <div className="max-w-[440px]">
-//         {/* Title */}
-//         <label className="text-sm">Title *</label>
-//         <input
-//           className="w-full border px-2 py-1 mb-3"
-//           value={productMeta.title}
-//           onChange={(e) => setProductMeta({ title: e.target.value })}
-//           placeholder="Retro Cat Tee"
-//           maxLength={70}
-//         />
-
-//         {/* Category */}
-//         <label className="text-sm">Category *</label>
-//         <select
-//           className="w-full border px-2 py-1 mb-3"
-//           value={productMeta.categorySlug}
-//           onChange={(e) => setProductMeta({ categorySlug: e.target.value })}
-//         >
-//           <option value="tshirts">T-Shirts</option>
-//           <option value="hoodies">Hoodies</option>
-//           <option value="kids">Kids</option>
-//         </select>
-
-//         {/* Art Type */}
-//         <label className="text-sm">Art Type</label>
-//         <select
-//           className="w-full border px-2 py-1 mb-3"
-//           value={productMeta.artType || ""}
-//           onChange={(e) => setProductMeta({ artType: e.target.value })}
-//         >
-//           <option value="">(Select)</option>
-//           <option value="illustration">Illustration</option>
-//           <option value="vector">Vector</option>
-//           <option value="typography">Typography</option>
-//           <option value="photography">Photography</option>
-//           <option value="calligraphy">Calligraphy</option>
-//         </select>
-
-//         {/* Currency + Price row */}
-//         <div className="flex gap-2 mb-3">
-//           <div className="w-2/5">
-//             <label className="text-sm">Currency</label>
-//             <select
-//               className="w-full border px-2 py-1"
-//               value={currency}
-//               onChange={(e) => setProductMeta({ currency: e.target.value })}
-//             >
-//               {/* Only USD now */}
-//               <option value="USD">$ USD</option>
-//             </select>
-//           </div>
-
-//           <div className="w-3/5">
-//             <label className="text-sm">
-//               Price ({currencySymbol})
-//             </label>
-//             <input
-//               type="number"
-//               min="0"
-//               step="1"
-//               className="w-full border px-2 py-1"
-//               value={priceValue}
-//               onChange={(e) => {
-//                 const val = e.target.value;
-//                 if (val === "") {
-//                   setProductMeta({ price: "" });
-//                 } else {
-//                   const num = parseFloat(val);
-//                   setProductMeta({ price: isNaN(num) ? "" : num });
-//                 }
-//               }}
-//               placeholder="20"
-//             />
-//           </div>
-//         </div>
-
-//         {/* Mature content toggle */}
-//         <div className="flex items-center gap-2 mb-4">
-//           <input
-//             id="mature-flag"
-//             type="checkbox"
-//             checked={isMature}
-//             onChange={(e) =>
-//               setProductMeta({ vendorMatureFlag: e.target.checked })
-//             }
-//           />
-//           <label htmlFor="mature-flag" className="text-sm">
-//             Contains mature / 18+ content
-//           </label>
-//         </div>
-
-//         {/* Tags */}
-//         <label className="text-sm">Tags (press Enter)</label>
-//         <input
-//           className="w-full border px-2 py-1 mb-1"
-//           value={tagInput}
-//           onChange={(e) => setTagInput(e.target.value)}
-//           onKeyDown={(e) => {
-//             if (e.key === "Enter") {
-//               e.preventDefault();
-//               commitTag();
-//             }
-//           }}
-//           placeholder="cat, minimal, retro"
-//         />
-//         <div className="flex flex-wrap gap-1 mb-3">
-//           {(productMeta.tags || []).map((t) => (
-//             <span
-//               key={t}
-//               className="text-xs bg-gray-100 px-2 py-0.5 rounded"
-//             >
-//               {t}{" "}
-//               <button className="ml-1" onClick={() => removeTag(t)}>
-//                 ×
-//               </button>
-//             </span>
-//           ))}
-//         </div>
-
-//         {/* Description */}
-//         <label className="text-sm">Description</label>
-//         <textarea
-//           className="w-full border px-2 py-1 mb-4"
-//           rows={5}
-//           maxLength={800}
-//           value={productMeta.description || ""}
-//           onChange={(e) =>
-//             setProductMeta({ description: e.target.value })
-//           }
-//           placeholder="Tell buyers about your artwork…"
-//         />
-
-//         {/* Save / Publish */}
-//         <button
-//           onClick={onSave}
-//           className="bg-blue-600 text-white w-full py-2 rounded"
-//         >
-//           💾 Save / Publish
-//         </button>
-
-//         {!isMetaValid() && (
-//           <div className="text-xs text-red-600 mt-2">
-//             Title and Category are required.
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
 // src/components/DetailsPane.jsx
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
 
 const PRINT = { left: 210, top: 200, width: 180, height: 280 };
@@ -307,6 +8,38 @@ function getWpConfig() {
   if (typeof window === "undefined") return {};
   return window.ARTON360 || {};
 }
+
+// --- Internal reusable UI components (TeePublic style) ---
+const FieldGroup = ({ label, helperText, children }) => (
+  <div className="mb-7">
+    <label className="block text-lg font-semibold text-gray-900 mb-1.5">
+      {label}
+    </label>
+    {helperText && <div className="text-sm text-gray-600 mb-3">{helperText}</div>}
+    {children}
+  </div>
+);
+
+const StyledInput = (props) => (
+  <input
+    className="w-full h-11 border border-gray-300 rounded-lg bg-white px-4 py-2.5 text-base text-gray-900 placeholder-gray-400 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    {...props}
+  />
+);
+
+const StyledSelect = (props) => (
+  <select
+    className="w-full h-11 border border-gray-300 rounded-lg bg-white px-4 py-2.5 text-base text-gray-900 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    {...props}
+  />
+);
+
+const StyledTextarea = (props) => (
+  <textarea
+    className="w-full border border-gray-300 rounded-lg bg-white px-4 py-3 text-base text-gray-900 placeholder-gray-400 shadow-sm outline-none transition-all resize-y focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    {...props}
+  />
+);
 
 export default function DetailsPane() {
   const {
@@ -325,18 +58,27 @@ export default function DetailsPane() {
   const activeIndex =
     typeof activeDesignIndex === "number" ? activeDesignIndex : 0;
 
+  // ✅ Fix: compute defaultCategory safely BEFORE fallback productMeta uses it
+  const activeDesign = tshirtDesigns?.[activeIndex];
+  const activeProductType = activeDesign?.productType || "tshirts";
+  const defaultCategory =
+    activeProductType === "graphic-tshirt" ? "graphic-tshirt" : "tshirts";
+
   // Per-design product meta (fallback if not created yet)
-  const productMeta =
-    designMetas?.[activeIndex] || {
-      title: "",
-      description: "",
-      categorySlug: "tshirts",
-      artType: "",
-      tags: [],
-      currency: "USD",
-      price: "",
-      vendorMatureFlag: false,
-    };
+  const productMeta = useMemo(() => {
+    return (
+      designMetas?.[activeIndex] || {
+        title: "",
+        description: "",
+        categorySlug: defaultCategory,
+        artType: "",
+        tags: [],
+        currency: "USD",
+        price: "",
+        vendorMatureFlag: false,
+      }
+    );
+  }, [designMetas, activeIndex, defaultCategory]);
 
   function exportPNG(c) {
     try {
@@ -386,7 +128,6 @@ export default function DetailsPane() {
       return;
     }
 
-    const activeDesign = tshirtDesigns?.[activeIndex];
     if (!activeDesign) {
       alert("No active design found to save.");
       console.warn("[ARTON360] No active design at index", activeIndex);
@@ -439,166 +180,221 @@ export default function DetailsPane() {
   };
 
   // ---- Price + Currency helpers ----
-  const currency = productMeta.currency || "USD"; // default USD
+  const currency = productMeta.currency || "USD";
   const priceValue =
     typeof productMeta.price === "number" ||
-    typeof productMeta.price === "string"
+      typeof productMeta.price === "string"
       ? productMeta.price
       : "";
-  const currencySymbol = "$"; // always show dollar
-
+  const currencySymbol = "$";
   const isMature = !!productMeta.vendorMatureFlag;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 text-left">Listing Details</h2>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      {/* TeePublic-style gray panel */}
+      <div className="bg-[#F3F4F6] border border-[#E5E7EB] rounded-xl p-8">
+        {/* 2-column grid (like TeePublic) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+          {/* LEFT COLUMN */}
+          <div>
+            <FieldGroup label="Design Title" helperText="Give your design a name!">
+              <StyledInput
+                value={productMeta.title}
+                onChange={(e) => setProductMeta({ title: e.target.value })}
+                placeholder="Title"
+                maxLength={70}
+              />
+            </FieldGroup>
 
-      <div className="max-w-[440px]">
-        {/* Title */}
-        <label className="text-sm">Title *</label>
-        <input
-          className="w-full border px-2 py-1 mb-3"
-          value={productMeta.title}
-          onChange={(e) => setProductMeta({ title: e.target.value })}
-          placeholder="Retro Cat Tee"
-          maxLength={70}
-        />
-
-        {/* Category */}
-        <label className="text-sm">Category *</label>
-        <select
-          className="w-full border px-2 py-1 mb-3"
-          value={productMeta.categorySlug}
-          onChange={(e) =>
-            setProductMeta({ categorySlug: e.target.value })
-          }
-        >
-          {/* Make sure these slugs match Products → Categories in WP */}
-          <option value="tshirts">T-shirt</option>
-          <option value="tshirts">Graphic T-shirt</option>
-        </select>
-
-        {/* Art Type */}
-        <label className="text-sm">Art Type</label>
-        <select
-          className="w-full border px-2 py-1 mb-3"
-          value={productMeta.artType || ""}
-          onChange={(e) => setProductMeta({ artType: e.target.value })}
-        >
-          <option value="">(Select)</option>
-          <option value="illustration">Illustration</option>
-          <option value="vector">Vector</option>
-          <option value="typography">Typography</option>
-          <option value="photography">Photography</option>
-          <option value="calligraphy">Calligraphy</option>
-        </select>
-
-        {/* Currency + Price */}
-        <div className="flex gap-2 mb-3">
-          <div className="w-2/5">
-            <label className="text-sm">Currency</label>
-            <select
-              className="w-full border px-2 py-1"
-              value={currency}
-              onChange={(e) =>
-                setProductMeta({ currency: e.target.value })
-              }
+            <FieldGroup
+              label="Description"
+              helperText="Describe your design in a short sentence or two!"
             >
-              <option value="USD">$ USD</option>
-            </select>
-          </div>
+              <StyledTextarea
+                rows={4}
+                maxLength={800}
+                value={productMeta.description || ""}
+                onChange={(e) => setProductMeta({ description: e.target.value })}
+                placeholder="Describe your design"
+              />
+            </FieldGroup>
 
-          <div className="w-3/5">
-            <label className="text-sm">Price ({currencySymbol})</label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              className="w-full border px-2 py-1"
-              value={priceValue}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "") {
-                  setProductMeta({ price: "" });
-                } else {
-                  const num = parseFloat(val);
-                  setProductMeta({ price: isNaN(num) ? "" : num });
-                }
-              }}
-              placeholder="20"
-            />
-          </div>
-        </div>
-
-        {/* Mature content toggle */}
-        <div className="flex items-center gap-2 mb-4">
-          <input
-            id="mature-flag"
-            type="checkbox"
-            checked={isMature}
-            onChange={(e) =>
-              setProductMeta({ vendorMatureFlag: e.target.checked })
-            }
-          />
-          <label htmlFor="mature-flag" className="text-sm">
-            Contains mature / 18+ content
-          </label>
-        </div>
-
-        {/* Tags */}
-        <label className="text-sm">Tags (press Enter)</label>
-        <input
-          className="w-full border px-2 py-1 mb-1"
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commitTag();
-            }
-          }}
-          placeholder="cat, minimal, retro"
-        />
-        <div className="flex flex-wrap gap-1 mb-3">
-          {(productMeta.tags || []).map((t) => (
-            <span
-              key={t}
-              className="text-xs bg-gray-100 px-2 py-0.5 rounded"
-            >
-              {t}{" "}
-              <button className="ml-1" onClick={() => removeTag(t)}>
-                ×
+            {/* Album (UI placeholder like TeePublic) */}
+            <div className="mb-7">
+              <label className="block text-lg font-semibold text-gray-900 mb-1.5">
+                Album
+              </label>
+              <div className="text-sm text-gray-600 mb-3">(Optional)</div>
+              <select className="w-full h-11 border border-gray-300 rounded-lg bg-gray-50 px-4 py-2.5 text-base text-gray-700 shadow-sm outline-none cursor-pointer transition-all hover:bg-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>No Available Albums</option>
+              </select>
+              <button className="mt-2.5 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors">
+                Manage Albums
               </button>
-            </span>
-          ))}
+            </div>
+
+            {/* Keep your existing fields (Category + ArtType) in the left column */}
+            <FieldGroup label="Category *" helperText="Choose a product category">
+              <StyledSelect
+                value={productMeta.categorySlug || defaultCategory}
+                onChange={(e) => setProductMeta({ categorySlug: e.target.value })}
+              >
+                <option value="tshirts">T-shirt</option>
+                <option value="graphic-tshirt">Graphic T-shirt</option>
+              </StyledSelect>
+            </FieldGroup>
+
+            <FieldGroup label="Art Type" helperText="Optional">
+              <StyledSelect
+                value={productMeta.artType || ""}
+                onChange={(e) => setProductMeta({ artType: e.target.value })}
+              >
+                <option value="">(Select)</option>
+                <option value="illustration">Illustration</option>
+                <option value="vector">Vector</option>
+                <option value="typography">Typography</option>
+                <option value="photography">Photography</option>
+                <option value="calligraphy">Calligraphy</option>
+              </StyledSelect>
+            </FieldGroup>
+
+            {/* Currency + Price */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FieldGroup label="Currency" helperText="Currently USD only">
+                <StyledSelect
+                  value={currency}
+                  onChange={(e) => setProductMeta({ currency: e.target.value })}
+                >
+                  <option value="USD">$ USD</option>
+                </StyledSelect>
+              </FieldGroup>
+
+              <FieldGroup label={`Price (${currencySymbol})`} helperText="Set your base price">
+                <StyledInput
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={priceValue}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setProductMeta({ price: "" });
+                    } else {
+                      const num = parseFloat(val);
+                      setProductMeta({ price: isNaN(num) ? "" : num });
+                    }
+                  }}
+                  placeholder="20"
+                />
+              </FieldGroup>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div>
+            {/* Main Tag (UI placeholder like TeePublic) */}
+            <FieldGroup
+              label="Main Tag"
+              helperText="What (1) tag would I search to find your design?"
+            >
+              <StyledInput placeholder="Main tag" />
+            </FieldGroup>
+
+            {/* Supporting Tags */}
+            <FieldGroup
+              label="Supporting Tags"
+              helperText="What other relevant tags would customers use to find your design?"
+            >
+              <StyledTextarea
+                rows={4}
+                placeholder="Use commas to separate tags"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitTag();
+                  }
+                }}
+              />
+              <div className="flex flex-wrap gap-2 mt-3">
+                {(productMeta.tags || []).map((t) => (
+                  <span
+                    key={t}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-sm font-medium text-blue-700"
+                  >
+                    {t}
+                    <button
+                      onClick={() => removeTag(t)}
+                      className="ml-2 text-blue-500 hover:text-blue-700 font-bold text-base leading-none"
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </FieldGroup>
+
+            {/* Mature content radio (TeePublic style) */}
+            <div className="mt-6">
+              <div className="text-lg font-semibold text-gray-900 mb-1.5 leading-snug">
+                Does this design contain Mature Content, such as nudity or other adult themes?
+              </div>
+              <div className="text-sm text-gray-600 mb-4">
+                If you are not sure, check out our{" "}
+                <span className="text-blue-600 font-medium cursor-pointer hover:underline">
+                  FAQ
+                </span>
+                .
+              </div>
+
+              <div className="flex gap-6">
+                <label className="inline-flex items-center cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="mature"
+                    checked={isMature === true}
+                    onChange={() => setProductMeta({ vendorMatureFlag: true })}
+                    className="w-5 h-5 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                  />
+                  <span className="ml-2.5 text-base font-medium text-gray-900">
+                    Yes
+                  </span>
+                </label>
+
+                <label className="inline-flex items-center cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="mature"
+                    checked={isMature === false}
+                    onChange={() => setProductMeta({ vendorMatureFlag: false })}
+                    className="w-5 h-5 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                  />
+                  <span className="ml-2.5 text-base font-medium text-gray-900">
+                    No
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Description */}
-        <label className="text-sm">Description</label>
-        <textarea
-          className="w-full border px-2 py-1 mb-4"
-          rows={5}
-          maxLength={800}
-          value={productMeta.description || ""}
-          onChange={(e) =>
-            setProductMeta({ description: e.target.value })
-          }
-          placeholder="Tell buyers about your artwork…"
-        />
+        {/* Save button (full-width like TeePublic action) */}
+        <div className="mt-8">
+          <button
+            onClick={onSave}
+            className="w-full h-11 rounded-lg bg-[#45b452] hover:bg-[#3da149] text-white font-bold shadow-sm transition-colors"
+          >
+            PUBLISH / SAVE
+          </button>
 
-        {/* Save / Publish */}
-        <button
-          onClick={onSave}
-          className="bg-blue-600 text-white w-full py-2 rounded"
-        >
-          💾 Save / Publish
-        </button>
-
-        {!isMetaValid() && (
-          <div className="text-xs text-red-600 mt-2">
-            Title and Category are required.
-          </div>
-        )}
+          {!isMetaValid() && (
+            <div className="text-sm text-red-600 mt-3">
+              Title and Category are required.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

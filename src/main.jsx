@@ -2,6 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
+import TeePublicApp from "./TeePublicApp.jsx";
 import "./index.css";
 
 // ===============================
@@ -28,6 +29,6 @@ if (typeof window !== "undefined" && !window.ARTON360_LISTENER_ATTACHED) {
 // ===============================
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <TeePublicApp />
   </React.StrictMode>
 );
