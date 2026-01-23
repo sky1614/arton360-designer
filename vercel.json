@@ -1,4 +1,5 @@
 {
+  "buildCommand": "bash install.sh",
   "builds": [
     {
       "src": "api/**/*.py",
