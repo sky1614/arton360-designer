@@ -1,4 +1,13 @@
 {
+  "builds": [
+    {
+      "src": "api/**/*.py",
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.11"
+      }
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
