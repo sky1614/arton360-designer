@@ -1,5 +1,11 @@
+// import { useState } from "react";
+// import { useDesignerStore } from "../state/useDesignerStore";
+// import { useMemo, useState } from "react";
+// import { useDesignerStore } from "../state/useDesignerStore";
+
 import { useState } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
+
 
 // --- Internal Reusable Components for Consistency ---
 
@@ -36,6 +42,21 @@ export default function DesignDetailsForm() {
         activeDesignIndex
     } = useDesignerStore();
 
+    // ---------- PRICING + PRODUCT TYPE ----------
+    const BASE_PRICE = {
+        tshirts: 15,
+        "graphic-tshirt": 30,
+    };
+
+    const { tshirtDesigns, setProductTypeForActive } = useDesignerStore();
+
+    const activeDesign = tshirtDesigns?.[activeDesignIndex];
+    const productType = activeDesign?.productType || "tshirts";
+    const base = BASE_PRICE[productType] ?? 15;
+
+    const [priceWarn, setPriceWarn] = useState("");
+
+
     const [tagInput, setTagInput] = useState("");
 
     // Safe Access
@@ -43,6 +64,7 @@ export default function DesignDetailsForm() {
         title: "",
         description: "",
         tags: [],
+        price: "",
         vendorMatureFlag: false,
     };
 
@@ -52,6 +74,8 @@ export default function DesignDetailsForm() {
         raw.split(",").forEach((t) => addTag(t));
         setTagInput("");
     };
+
+    
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-8">
@@ -96,6 +120,104 @@ export default function DesignDetailsForm() {
                             <button className="mt-2.5 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors">
                                 Manage Albums
                             </button>
+                        </div>
+                        {/* Pricing Section */}
+                        <div className="mb-7">
+                            <label className="block text-lg font-semibold text-gray-900 mb-1.5">Pricing</label>
+                            <div className="text-sm text-gray-600 mb-3">
+                                You can’t set a price lower than the base price.
+                            </div>
+
+                            {/* Type selection */}
+                            <div className="flex items-center gap-6 mb-3">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="ptype-price"
+                                        checked={productType === "tshirts"}
+                                        onChange={() => {
+                                            setProductTypeForActive("tshirts");
+                                            setProductMeta({ categorySlug: "tshirts" });
+
+                                            const newBase = BASE_PRICE["tshirts"];
+                                            const n = Number(productMeta.price);
+                                            if (productMeta.price && !Number.isNaN(n) && n < newBase) {
+                                                setProductMeta({ price: String(newBase) });
+                                                setPriceWarn(`Minimum allowed is $${newBase}.`);
+                                            } else {
+                                                setPriceWarn("");
+                                            }
+                                        }}
+                                    />
+                                    <span className="text-base font-medium text-gray-900">Standard T-Shirt</span>
+                                </label>
+
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="ptype-price"
+                                        checked={productType === "graphic-tshirt"}
+                                        onChange={() => {
+                                            setProductTypeForActive("graphic-tshirt");
+                                            setProductMeta({ categorySlug: "graphic-tshirt" });
+
+                                            const newBase = BASE_PRICE["graphic-tshirt"];
+                                            const n = Number(productMeta.price);
+                                            if (productMeta.price && !Number.isNaN(n) && n < newBase) {
+                                                setProductMeta({ price: String(newBase) });
+                                                setPriceWarn(`Minimum allowed is $${newBase}.`);
+                                            } else {
+                                                setPriceWarn("");
+                                            }
+                                        }}
+                                    />
+                                    <span className="text-base font-medium text-gray-900">Graphic T-Shirt</span>
+                                </label>
+                            </div>
+
+                            {/* Base price display */}
+                            <div className="text-sm mb-2">
+                                Base price: <span className="font-semibold">${base}</span>
+                            </div>
+
+                            {/* Price input */}
+                            <div className="flex items-center gap-3">
+                                <div className="text-sm font-medium">Your price ($)</div>
+                                <input
+                                    type="number"
+                                    min={base}
+                                    step="0.01"
+                                    value={productMeta.price || ""}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setProductMeta({ price: v });
+
+                                        const n = Number(v);
+                                        if (!v) {
+                                            setPriceWarn("");
+                                            return;
+                                        }
+                                        if (!Number.isNaN(n) && n < base) {
+                                            setPriceWarn(`Minimum allowed is $${base}.`);
+                                        } else {
+                                            setPriceWarn("");
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        const n = Number(productMeta.price);
+                                        if (!productMeta.price) return;
+                                        if (!Number.isNaN(n) && n < base) {
+                                            alert(`Price can’t be lower than $${base}.`);
+                                            setProductMeta({ price: String(base) });
+                                            setPriceWarn("");
+                                        }
+                                    }}
+                                    className="w-40 border border-gray-300 rounded-lg bg-white px-4 py-2.5 text-base text-gray-900 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                    placeholder={`${base}`}
+                                />
+                            </div>
+
+                            {priceWarn ? <div className="mt-2 text-sm text-red-600">{priceWarn}</div> : null}
                         </div>
                     </div>
 
