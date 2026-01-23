@@ -1,0 +1,35 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Change this to the version you're using
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Login to Heroku
+      uses: akshnz/heroku-login-action@v1
+      with:
+        email: ${{ secrets.HEROKU_EMAIL }}  # Your Heroku account email
+        api_key: ${{ secrets.HEROKU_API_KEY }}  # Heroku API key (you'll store this in GitHub Secrets)
+
+    - name: Deploy to Heroku
+      run: |
+        git remote add heroku https://git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
+        git push heroku main  # This pushes to the 'main' branch of your Heroku app
