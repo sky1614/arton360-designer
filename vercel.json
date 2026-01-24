@@ -1,25 +1,26 @@
 {
-  "buildCommand": "bash install.sh",
-  "builds": [
-    {
-      "src": "api/**/*.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.11"
-      }
-    }
-  ],
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "ALLOWALL" },
-        { "key": "Content-Security-Policy", "value": "frame-ancestors *" }
+        { 
+          "key": "X-Frame-Options", 
+          "value": "ALLOWALL" 
+        },
+        { 
+          "key": "Content-Security-Policy", 
+          "value": "frame-ancestors *" 
+        }
       ]
     }
   ],
-    "env": {
-      "PYTHON_VERSION": "3.11"
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  }
-
+  ]
+}
