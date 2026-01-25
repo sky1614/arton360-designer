@@ -118,21 +118,111 @@ export default function ProductRow() {
     }
 
     const onSave = async () => {
-        if (!canvas) return;
+        console.log("=== SAVE STARTED ===");
+        
+        if (!canvas) {
+            alert("Canvas not ready");
+            console.error("Canvas is null");
+            return;
+        }
+        
         if (!isMetaValid()) {
             alert("Please add Title and Category.");
+            console.error("Meta validation failed");
             return;
         }
 
         const previewPng = exportPNG(canvas);
-        if (!previewPng) return;
-
-        const { site: WP_SITE, nonce: WP_NONCE } = getWpConfig();
-        if (!WP_SITE || !WP_NONCE) {
-            alert("Connection to WordPress not ready (Mock Mode).");
+        if (!previewPng) {
+            alert("Failed to generate preview image");
+            console.error("Preview PNG generation failed");
             return;
         }
-        alert("Save logic would run here.");
+
+        const config = getWpConfig();
+        console.log("WP Config received:", {
+            hasSite: !!config.site,
+            hasNonce: !!config.nonce,
+            hasVendorId: !!config.vendorId,
+            site: config.site
+        });
+        
+        if (!config.site || !config.nonce) {
+            alert(`WordPress connection not ready.\nSite: ${!!config.site}\nNonce: ${!!config.nonce}`);
+            console.error("Missing WP config:", config);
+            return;
+        }
+
+        const url = `${config.site}/wp-json/arton360/v1/save-design`;
+        console.log("Posting to URL:", url);
+
+        const { designMetas, tshirtDesigns, activeDesignIndex } = useDesignerStore.getState();
+        const activeDesign = tshirtDesigns[activeDesignIndex];
+        const productMeta = designMetas[activeDesignIndex];
+
+        const payload = {
+            designName: productMeta.title || "Untitled Design",
+            tshirtDesigns: [activeDesign],
+            previewPng,
+            printBox: { left: 210, top: 200, width: 180, height: 280 },
+            productMeta: {
+                title: productMeta.title,
+                description: productMeta.description || "",
+                categorySlug: productMeta.categorySlug || "tshirts",
+                tags: productMeta.tags || [],
+                price: parseFloat(productMeta.price) || 25,
+                currency: productMeta.currency || "USD",
+                artType: productMeta.artType || "",
+                vendorMatureFlag: productMeta.vendorMatureFlag || false
+            }
+        };
+
+        console.log("Payload preview:", {
+            designName: payload.designName,
+            hasPreviewPng: !!payload.previewPng,
+            previewPngLength: payload.previewPng?.length,
+            productMeta: payload.productMeta,
+            designsCount: payload.tshirtDesigns?.length
+        });
+        
+        try {
+            console.log("Sending fetch request...");
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-WP-Nonce": config.nonce,
+                },
+                credentials: "include",
+                body: JSON.stringify(payload),
+            });
+
+            console.log("Response received:", {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
+
+            const data = await response.json();
+            console.log("Response data:", data);
+
+            if (response.ok && data.ok) {
+                alert(`✅ Product Created Successfully!\n\nProduct ID: ${data.product_id}\nStatus: ${data.status}\n\nClick OK to view your product.`);
+                console.log("✅ SUCCESS - Product URL:", data.product_url);
+                
+                // Open product in new tab
+                if (data.product_url) {
+                    window.open(data.product_url, '_blank');
+                }
+            } else {
+                const errorMsg = data.message || data.code || response.statusText || "Unknown error";
+                alert(`❌ Save Failed\n\nError: ${errorMsg}\n\nCheck browser console for details.`);
+                console.error("Save failed:", data);
+            }
+        } catch (error) {
+            console.error("❌ Network/Fetch error:", error);
+            alert(`❌ Network Error\n\n${error.message}\n\nCheck:\n1. Internet connection\n2. WordPress site is accessible\n3. Browser console for details`);
+        }
     };
 
     return (

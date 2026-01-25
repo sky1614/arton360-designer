@@ -109,67 +109,111 @@ export default function DetailsPane() {
   }
 
   const onSave = async () => {
-    if (!canvas) return;
-
-    if (!isMetaValid()) {
-      alert("Please add Title and Category.");
-      return;
-    }
-
-    const previewPng = exportPNG(canvas);
-    if (!previewPng) return;
-
-    const { site: WP_SITE, nonce: WP_NONCE } = getWpConfig();
-    if (!WP_SITE || !WP_NONCE) {
-      alert(
-        "Connection to WordPress is not ready yet. Please refresh the page and try again."
-      );
-      console.warn("[ARTON360] Missing WP config:", getWpConfig());
-      return;
-    }
-
-    if (!activeDesign) {
-      alert("No active design found to save.");
-      console.warn("[ARTON360] No active design at index", activeIndex);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${WP_SITE}/wp-json/arton360/v1/save-design`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-WP-Nonce": WP_NONCE,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          designName: productMeta.title,
-          // Only this design is sent to WP
-          tshirtDesigns: [activeDesign],
-          previewPng,
-          printBox: PRINT,
-          // listing details for THIS design
-          productMeta,
-        }),
-      });
-
-      const json = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        console.error("[ARTON360] Save failed", res.status, json);
-        alert(json?.message || `Save failed (${res.status})`);
-        return;
+      console.log("=== SAVE STARTED ===");
+      
+      if (!canvas) {
+          alert("Canvas not ready");
+          console.error("Canvas is null");
+          return;
+      }
+      
+      if (!isMetaValid()) {
+          alert("Please add Title and Category.");
+          console.error("Meta validation failed");
+          return;
       }
 
-      alert(
-        json.status === "publish"
-          ? "✅ Published on the store!"
-          : "✅ Saved (status: " + json.status + ")"
-      );
-    } catch (err) {
-      console.error("[ARTON360] Network error", err);
-      alert("Network error while saving. Please try again.");
-    }
+      const previewPng = exportPNG(canvas);
+      if (!previewPng) {
+          alert("Failed to generate preview image");
+          console.error("Preview PNG generation failed");
+          return;
+      }
+
+      const config = getWpConfig();
+      console.log("WP Config received:", {
+          hasSite: !!config.site,
+          hasNonce: !!config.nonce,
+          hasVendorId: !!config.vendorId,
+          site: config.site
+      });
+      
+      if (!config.site || !config.nonce) {
+          alert(`WordPress connection not ready.\nSite: ${!!config.site}\nNonce: ${!!config.nonce}`);
+          console.error("Missing WP config:", config);
+          return;
+      }
+
+      const url = `${config.site}/wp-json/arton360/v1/save-design`;
+      console.log("Posting to URL:", url);
+
+      const { designMetas, tshirtDesigns, activeDesignIndex } = useDesignerStore.getState();
+      const activeDesign = tshirtDesigns[activeDesignIndex];
+      const productMeta = designMetas[activeDesignIndex];
+
+      const payload = {
+          designName: productMeta.title || "Untitled Design",
+          tshirtDesigns: [activeDesign],
+          previewPng,
+          printBox: { left: 210, top: 200, width: 180, height: 280 },
+          productMeta: {
+              title: productMeta.title,
+              description: productMeta.description || "",
+              categorySlug: productMeta.categorySlug || "tshirts",
+              tags: productMeta.tags || [],
+              price: parseFloat(productMeta.price) || 25,
+              currency: productMeta.currency || "USD",
+              artType: productMeta.artType || "",
+              vendorMatureFlag: productMeta.vendorMatureFlag || false
+          }
+      };
+
+      console.log("Payload preview:", {
+          designName: payload.designName,
+          hasPreviewPng: !!payload.previewPng,
+          previewPngLength: payload.previewPng?.length,
+          productMeta: payload.productMeta,
+          designsCount: payload.tshirtDesigns?.length
+      });
+      
+      try {
+          console.log("Sending fetch request...");
+          const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "X-WP-Nonce": config.nonce,
+              },
+              credentials: "include",
+              body: JSON.stringify(payload),
+          });
+
+          console.log("Response received:", {
+              status: response.status,
+              statusText: response.statusText,
+              ok: response.ok
+          });
+
+          const data = await response.json();
+          console.log("Response data:", data);
+
+          if (response.ok && data.ok) {
+              alert(`✅ Product Created Successfully!\n\nProduct ID: ${data.product_id}\nStatus: ${data.status}\n\nClick OK to view your product.`);
+              console.log("✅ SUCCESS - Product URL:", data.product_url);
+              
+              // Open product in new tab
+              if (data.product_url) {
+                  window.open(data.product_url, '_blank');
+              }
+          } else {
+              const errorMsg = data.message || data.code || response.statusText || "Unknown error";
+              alert(`❌ Save Failed\n\nError: ${errorMsg}\n\nCheck browser console for details.`);
+              console.error("Save failed:", data);
+          }
+      } catch (error) {
+          console.error("❌ Network/Fetch error:", error);
+          alert(`❌ Network Error\n\n${error.message}\n\nCheck:\n1. Internet connection\n2. WordPress site is accessible\n3. Browser console for details`);
+      }
   };
 
   const commitTag = () => {
