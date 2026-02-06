@@ -3,14 +3,10 @@ import { useDesignerStore } from "../state/useDesignerStore";
 import CanvasArea from "./CanvasArea";
 import WebFont from "webfontloader";
 import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
+import { saveDesignToWordPress } from "../utils/saveDesign";
 
 // Common fonts
 const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
-
-function getWpConfig() {
-    if (typeof window === "undefined") return {};
-    return window.ARTON360 || {};
-}
 
 export default function ProductRow() {
     const {
@@ -94,134 +90,15 @@ export default function ProductRow() {
         });
     };
 
-    const exportPNG = (c) => {
-        try {
-            const all = c.getObjects();
-            const guides = all.filter((o) => o._isGuide);
-            guides.forEach((g) => g.set({ opacity: 0 }));
-            c.discardActiveObject();
-            c.renderAll();
-
-            const png = c.toDataURL({
-                format: "png",
-                multiplier: 2,
-                enableRetinaScaling: true,
-            });
-
-            guides.forEach((g) => g.set({ opacity: 1 }));
-            c.renderAll();
-            return png;
-        } catch (e) {
-            console.error(e);
-            return null;
-        }
-    }
-
     const onSave = async () => {
-        console.log("=== SAVE STARTED ===");
-        
-        if (!canvas) {
-            alert("Canvas not ready");
-            console.error("Canvas is null");
-            return;
-        }
-        
-        if (!isMetaValid()) {
-            alert("Please add Title and Category.");
-            console.error("Meta validation failed");
-            return;
-        }
-
-        const previewPng = exportPNG(canvas);
-        if (!previewPng) {
-            alert("Failed to generate preview image");
-            console.error("Preview PNG generation failed");
-            return;
-        }
-
-        const config = getWpConfig();
-        console.log("WP Config received:", {
-            hasSite: !!config.site,
-            hasNonce: !!config.nonce,
-            hasVendorId: !!config.vendorId,
-            site: config.site
-        });
-        
-        if (!config.site || !config.nonce) {
-            alert(`WordPress connection not ready.\nSite: ${!!config.site}\nNonce: ${!!config.nonce}`);
-            console.error("Missing WP config:", config);
-            return;
-        }
-
-        const url = `${config.site}/wp-json/arton360/v1/save-design`;
-        console.log("Posting to URL:", url);
-
-        const { designMetas, tshirtDesigns, activeDesignIndex } = useDesignerStore.getState();
-        const activeDesign = tshirtDesigns[activeDesignIndex];
-        const productMeta = designMetas[activeDesignIndex];
-
-        const payload = {
-            designName: productMeta.title || "Untitled Design",
-            tshirtDesigns: [activeDesign],
-            previewPng,
-            printBox: { left: 210, top: 200, width: 180, height: 280 },
-            productMeta: {
-                title: productMeta.title,
-                description: productMeta.description || "",
-                categorySlug: productMeta.categorySlug || "tshirts",
-                tags: productMeta.tags || [],
-                price: parseFloat(productMeta.price) || 25,
-                currency: productMeta.currency || "USD",
-                artType: productMeta.artType || "",
-                vendorMatureFlag: productMeta.vendorMatureFlag || false
+        const result = await saveDesignToWordPress(canvas);
+        if (result.success) {
+            alert(`Product Created!\n\nProduct ID: ${result.data.product_id}\nStatus: ${result.data.status}\n\nClick OK to view your product.`);
+            if (result.data.product_url) {
+                window.open(result.data.product_url, '_blank');
             }
-        };
-
-        console.log("Payload preview:", {
-            designName: payload.designName,
-            hasPreviewPng: !!payload.previewPng,
-            previewPngLength: payload.previewPng?.length,
-            productMeta: payload.productMeta,
-            designsCount: payload.tshirtDesigns?.length
-        });
-        
-        try {
-            console.log("Sending fetch request...");
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-WP-Nonce": config.nonce,
-                },
-                credentials: "include",
-                body: JSON.stringify(payload),
-            });
-
-            console.log("Response received:", {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok
-            });
-
-            const data = await response.json();
-            console.log("Response data:", data);
-
-            if (response.ok && data.ok) {
-                alert(`✅ Product Created Successfully!\n\nProduct ID: ${data.product_id}\nStatus: ${data.status}\n\nClick OK to view your product.`);
-                console.log("✅ SUCCESS - Product URL:", data.product_url);
-                
-                // Open product in new tab
-                if (data.product_url) {
-                    window.open(data.product_url, '_blank');
-                }
-            } else {
-                const errorMsg = data.message || data.code || response.statusText || "Unknown error";
-                alert(`❌ Save Failed\n\nError: ${errorMsg}\n\nCheck browser console for details.`);
-                console.error("Save failed:", data);
-            }
-        } catch (error) {
-            console.error("❌ Network/Fetch error:", error);
-            alert(`❌ Network Error\n\n${error.message}\n\nCheck:\n1. Internet connection\n2. WordPress site is accessible\n3. Browser console for details`);
+        } else {
+            alert(`Save Failed\n\n${result.error}\n\nCheck browser console for details.`);
         }
     };
 
@@ -265,11 +142,15 @@ export default function ProductRow() {
                                     <div className="ml-3 text-gray-700 font-medium">ON</div>
                                 </label>
 
-                                {/* Default Color Dropdown */}
-                                <select className="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-                                    <option>Select Default Color</option>
-                                    <option>White</option>
-                                    <option>Black</option>
+                                {/* Default Color Dropdown - synced with swatch selection */}
+                                <select
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                                    value={activeDesign?.color || "white"}
+                                    onChange={(e) => setColor(e.target.value)}
+                                >
+                                    {regularColors.map((c) => (
+                                        <option key={c.key} value={c.key}>{c.label}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

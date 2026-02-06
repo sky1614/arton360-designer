@@ -66,10 +66,42 @@ const REGULAR_COLORS = [
   { key: "yellow-haze", file: "yellow-haze.png", hex: "#f7e36d", label: "Yellow Haze", tone: "light" }
 ];
 
-const regularMockupFront = (colorKey) => {
-  const found = REGULAR_COLORS.find((c) => c.key === colorKey) || REGULAR_COLORS[0];
+/**
+ * Simple heuristic: is a hex color "light" (bright enough for dark text)?
+ */
+const isLightColor = (hex) => {
+  if (!hex || hex.length < 4) return true;
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16) || 0;
+  const g = parseInt(h.substring(2, 4), 16) || 0;
+  const b = parseInt(h.substring(4, 6), 16) || 0;
+  // Perceived brightness (ITU-R BT.709)
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 140;
+};
+
+/**
+ * Get front mockup URL for a color.
+ * Accepts an optional colors array (for use inside store actions after WP colors load).
+ * Falls back to REGULAR_COLORS (hardcoded) if no array is provided.
+ */
+const regularMockupFront = (colorKey, colorsOverride) => {
+  const colors = colorsOverride || REGULAR_COLORS;
+  const found = colors.find((c) => c.key === colorKey) || colors[0];
+
+  // If the color has a full mockup URL from WordPress, use that
+  if (found.mockupUrl) {
+    return found.mockupUrl;
+  }
+
+  // Otherwise use local mockup file path
   return `/mockups/${found.file}`;
 };
+
+// helper: returns { front, back } mockup URLs for regular (box) tee
+const colorToMockups = (colorKey) => ({
+  front: regularMockupFront(colorKey),
+  back: regularMockupFront(colorKey), // use front image for back until separate back mockups exist
+});
 
 // helper to make stable IDs for design items
 const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -150,7 +182,7 @@ export const useDesignerStore = create((set, get) => ({
         sideObj.isFullPrint = true;
       } else {
         // default back to regular tee
-        sideObj.mockup = regularMockupFront(active.color || "white");
+        sideObj.mockup = regularMockupFront(active.color || "white", state.regularColors);
         sideObj.printType = "box";
         sideObj.maskUrl = null;
         sideObj.isFullPrint = false;
@@ -163,6 +195,45 @@ export const useDesignerStore = create((set, get) => ({
   canvas: null,
   setCanvas: (c) => set({ canvas: c }),
   regularColors: REGULAR_COLORS,
+
+  // ====== Dynamic color loading from WordPress taxonomy ======
+  colorsLoaded: false,
+
+  /**
+   * Fetch available colors from WordPress pa_color taxonomy.
+   * Falls back to hardcoded REGULAR_COLORS if fetch fails.
+   * Called from main.jsx when ARTON360_CONFIG is received.
+   */
+  fetchColorsFromWP: async (siteUrl) => {
+    try {
+      const url = `${siteUrl}/wp-json/arton360/v1/colors`;
+      const resp = await fetch(url, { credentials: "include" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const wpColors = await resp.json();
+      if (!Array.isArray(wpColors) || wpColors.length === 0) {
+        console.warn("[ARTON360] No colors returned from WP, using defaults");
+        set({ colorsLoaded: true });
+        return;
+      }
+
+      // Map WP colors to the format used by the store
+      const mapped = wpColors.map((c) => ({
+        key: c.key,
+        label: c.label,
+        hex: c.hex || "#cccccc",
+        file: `${c.key}.png`, // fallback filename
+        mockupUrl: c.mockupUrl || "", // full URL from WP
+        tone: isLightColor(c.hex) ? "light" : "dark",
+      }));
+
+      console.log(`[ARTON360] Loaded ${mapped.length} colors from WordPress`);
+      set({ regularColors: mapped, colorsLoaded: true });
+    } catch (err) {
+      console.warn("[ARTON360] Failed to fetch colors from WP, using defaults:", err.message);
+      set({ colorsLoaded: true });
+    }
+  },
 
 
   // ====== T-shirt list ======
@@ -338,7 +409,7 @@ export const useDesignerStore = create((set, get) => ({
       if ((active.productType || "tshirts") !== "tshirts") return {};
 
       active.color = colorKey;
-      active.sides.front.mockup = regularMockupFront(colorKey);
+      active.sides.front.mockup = regularMockupFront(colorKey, state.regularColors);
 
       return { tshirtDesigns: designs };
     }),
