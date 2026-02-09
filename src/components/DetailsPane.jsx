@@ -102,7 +102,6 @@ export default function DetailsPane() {
     }
   };
 
-
   const commitTag = () => {
     const raw = tagInput.trim();
     if (!raw) return;
@@ -328,7 +327,6 @@ export default function DetailsPane() {
               PUBLISH ALL ({tshirtDesigns.length} designs)
             </button>
           )}
-
 
           {!isMetaValid() && (
             <div className="text-sm text-red-600 mt-3">
