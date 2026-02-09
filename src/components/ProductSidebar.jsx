@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
 import WebFont from "webfontloader";
 import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
+import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
+import useDesignerStore from "../store/useDesignerStore";
 
 // Common fonts
 const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
@@ -128,23 +130,31 @@ export default function ProductSidebar() {
     }
 
     const onSave = async () => {
-        if (!canvas) return;
-        if (!isMetaValid()) {
-            alert("Please add Title and Category.");
+        const canvas = window.__fabric_canvas || document.querySelector("canvas");
+        if (!canvas) {
+            alert("Canvas not found");
             return;
         }
+        const result = await saveDesignToWordPress(canvas);
+        if (result.success) {
+            alert("Design published successfully!");
+        } else {
+            alert("Publish failed: " + (result.error || "Unknown error"));
+        }
+    };
 
-        const previewPng = exportPNG(canvas);
-        if (!previewPng) return;
-
-        const { site: WP_SITE, nonce: WP_NONCE } = getWpConfig();
-        if (!WP_SITE || !WP_NONCE) {
-            alert("Connection to WordPress not ready (Mock Mode).");
+    const onSaveAll = async () => {
+        const canvas = window.__fabric_canvas || document.querySelector("canvas");
+        if (!canvas) {
+            alert("Canvas not found");
             return;
         }
-
-        // ... existing save logic (simplified for brevity, assume same fetch)
-        alert("Save logic would run here (requires real WP backend).");
+        const result = await saveAllDesignsToWordPress(canvas);
+        if (result.success) {
+            alert(`All ${result.total} designs published successfully!`);
+        } else {
+            alert(`Published ${result.succeeded}/${result.total}. ${result.failed} failed.`);
+        }
     };
 
     const commitTag = () => {
@@ -318,6 +328,14 @@ export default function ProductSidebar() {
                 >
                     <span>Save & Publish</span>
                 </button>
+                {tshirtDesigns?.length > 1 && (
+                    <button
+                        onClick={onSaveAll}
+                        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-colors mt-2"
+                    >
+                        PUBLISH ALL ({tshirtDesigns.length} designs)
+                    </button>
+                )}
                 <div className="text-center mt-2 text-xs text-gray-400">
                     By saving, you agree to the Artist Terms.
                 </div>
