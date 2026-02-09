@@ -3,7 +3,6 @@ import { useDesignerStore } from "../state/useDesignerStore";
 import WebFont from "webfontloader";
 import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
 import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
-import useDesignerStore from "../store/useDesignerStore";
 
 // Common fonts
 const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
