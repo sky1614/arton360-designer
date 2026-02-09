@@ -192,3 +192,44 @@ export async function saveDesignToWordPress(canvas) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Publish ALL designs in batch (one by one, sequentially).
+ * Switches canvas to each design, exports PNGs, and posts to WP.
+ */
+export async function saveAllDesignsToWordPress(canvas) {
+  const store = useDesignerStore.getState();
+  const { tshirtDesigns, designMetas } = store;
+  const total = tshirtDesigns.length;
+
+  if (total === 0) return { success: false, error: "No designs to publish" };
+
+  const results = [];
+
+  for (let i = 0; i < total; i++) {
+    console.log(`=== BATCH PUBLISH ${i + 1}/${total} ===`);
+
+    // Switch to this design and wait for canvas to re-render
+    useDesignerStore.setState({ activeDesignIndex: i });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Now export and publish this specific design
+    const result = await saveDesignToWordPress(canvas);
+    results.push({
+      index: i,
+      title: designMetas[i]?.title || `Design ${i + 1}`,
+      ...result,
+    });
+  }
+
+  const succeeded = results.filter((r) => r.success).length;
+  const failed = results.filter((r) => !r.success);
+
+  return {
+    success: failed.length === 0,
+    total,
+    succeeded,
+    failed: failed.length,
+    results,
+  };
+}
