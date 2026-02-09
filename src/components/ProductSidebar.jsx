@@ -65,7 +65,7 @@ export default function ProductSidebar() {
     const onUpload = async (e) => {
         const files = e.target.files;
         await uploadFilesToCanvas({
-            // files,
+            files,
             canvas,
             addMultipleSame,
             addMultipleSeparate,
