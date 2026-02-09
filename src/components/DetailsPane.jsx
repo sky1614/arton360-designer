@@ -1,7 +1,7 @@
 // src/components/DetailsPane.jsx
 import { useState, useMemo } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
-import { saveDesignToWordPress } from "../utils/saveDesign";
+import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
 
 // --- Internal reusable UI components (TeePublic style) ---
 const FieldGroup = ({ label, helperText, children }) => (
@@ -85,6 +85,23 @@ export default function DetailsPane() {
       alert(`Save Failed\n\n${result.error}\n\nCheck browser console for details.`);
     }
   };
+
+  const onSaveAll = async () => {
+    const total = tshirtDesigns?.length || 0;
+    if (total <= 1) {
+      onSave();
+      return;
+    }
+    if (!confirm(`Publish all ${total} designs? Each will be created as a separate product.`)) return;
+    const result = await saveAllDesignsToWordPress(canvas);
+    if (result.success) {
+      alert(`All ${result.succeeded} products created successfully!`);
+    } else {
+      alert(`Published ${result.succeeded}/${result.total}.\n${result.failed} failed.\n\nCheck console for details.`);
+      console.log("Batch results:", result.results);
+    }
+  };
+
 
   const commitTag = () => {
     const raw = tagInput.trim();
@@ -302,6 +319,16 @@ export default function DetailsPane() {
           >
             PUBLISH / SAVE
           </button>
+
+          {tshirtDesigns?.length > 1 && (
+            <button
+              onClick={onSaveAll}
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-colors mt-2"
+            >
+              PUBLISH ALL ({tshirtDesigns.length} designs)
+            </button>
+          )}
+
 
           {!isMetaValid() && (
             <div className="text-sm text-red-600 mt-3">
