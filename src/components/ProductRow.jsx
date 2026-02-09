@@ -3,7 +3,7 @@ import { useDesignerStore } from "../state/useDesignerStore";
 import CanvasArea from "./CanvasArea";
 import WebFont from "webfontloader";
 import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
-import { saveDesignToWordPress } from "../utils/saveDesign";
+import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
 
 // Common fonts
 const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
@@ -99,6 +99,15 @@ export default function ProductRow() {
             }
         } else {
             alert(`Save Failed\n\n${result.error}\n\nCheck browser console for details.`);
+        }
+    };
+    const onSaveAll = async () => {
+        const result = await saveAllDesignsToWordPress(canvas);
+        if (result.success) {
+            alert(`All ${result.total} designs published successfully!`);
+        } else {
+            alert(`Published ${result.succeeded}/${result.total}. ${result.failed} failed.\n\nCheck console for details.`);
+            console.log("Batch results:", result.results);
         }
     };
 
@@ -269,10 +278,17 @@ export default function ProductRow() {
             </div>
 
             {/* FINAL SAVE BUTTON AREA */}
-            <div className="mt-8 text-center">
+            <div className="mt-8 text-center space-y-3">
                 <button onClick={onSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors">
                     Publish
                 </button>
+                {tshirtDesigns?.length > 1 && (
+                    <div>
+                        <button onClick={onSaveAll} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors">
+                            PUBLISH ALL ({tshirtDesigns.length} designs)
+                        </button>
+                    </div>
+                )}
             </div>
 
         </div>
