@@ -87,7 +87,7 @@ export function exportArtworkPNG(canvas) {
  * Save/publish the active design to WordPress.
  * Returns { success: true, data } or { success: false, error }.
  */
-export async function saveDesignToWordPress(canvas) {
+export async function saveDesignToWordPress(canvasArg) {
   console.log("=== SAVE STARTED ===");
 
   // Always use fresh canvas from store (important for batch publish)
@@ -208,12 +208,23 @@ export async function saveDesignToWordPress(canvas) {
  * Publish ALL designs in batch (one by one, sequentially).
  * Switches canvas to each design, exports PNGs, and posts to WP.
  */
-export async function saveAllDesignsToWordPress(canvas) {
+export async function saveAllDesignsToWordPress(canvasArg) {
   const store = useDesignerStore.getState();
   const { tshirtDesigns, designMetas } = store;
   const total = tshirtDesigns.length;
 
   if (total === 0) return { success: false, error: "No designs to publish" };
+
+  // Pre-fill missing titles so validation doesn't block batch
+  for (let i = 0; i < total; i++) {
+    const meta = designMetas[i];
+    if (!meta?.title || meta.title.trim().length < 3) {
+      store.setProductMetaForIndex(i, {
+        title: meta?.title || `Design ${i + 1}`,
+        categorySlug: meta?.categorySlug || "tshirts",
+      });
+    }
+  }
 
   const results = [];
 
@@ -222,13 +233,14 @@ export async function saveAllDesignsToWordPress(canvas) {
 
     // Switch to this design and wait for canvas to re-render
     useDesignerStore.setState({ activeDesignIndex: i });
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // Now export and publish this specific design
-    const result = await saveDesignToWordPress(canvas);
+    const result = await saveDesignToWordPress(canvasArg);
+    console.log(`Design ${i + 1} result:`, result);
     results.push({
       index: i,
-      title: designMetas[i]?.title || `Design ${i + 1}`,
+      title: useDesignerStore.getState().designMetas[i]?.title || `Design ${i + 1}`,
       ...result,
     });
   }
