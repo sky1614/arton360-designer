@@ -90,6 +90,9 @@ export function exportArtworkPNG(canvas) {
 export async function saveDesignToWordPress(canvas) {
   console.log("=== SAVE STARTED ===");
 
+  // Always use fresh canvas from store (important for batch publish)
+  const canvas = useDesignerStore.getState().canvas || canvasArg;
+
   if (!canvas) {
     return { success: false, error: "Canvas not ready" };
   }
@@ -212,17 +215,6 @@ export async function saveAllDesignsToWordPress(canvas) {
 
   if (total === 0) return { success: false, error: "No designs to publish" };
 
-  // Pre-fill missing titles so validation doesn't block batch
-  for (let i = 0; i < total; i++) {
-    const meta = designMetas[i];
-    if (!meta?.title || meta.title.trim().length < 3) {
-      store.setProductMetaForIndex(i, {
-        title: meta?.title || `Design ${i + 1}`,
-        categorySlug: meta?.categorySlug || "tshirts",
-      });
-    }
-  }
-
   const results = [];
 
   for (let i = 0; i < total; i++) {
@@ -230,14 +222,13 @@ export async function saveAllDesignsToWordPress(canvas) {
 
     // Switch to this design and wait for canvas to re-render
     useDesignerStore.setState({ activeDesignIndex: i });
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Now export and publish this specific design
     const result = await saveDesignToWordPress(canvas);
-    console.log(`Design ${i + 1} result:`, result);
     results.push({
       index: i,
-      title: useDesignerStore.getState().designMetas[i]?.title || `Design ${i + 1}`,
+      title: designMetas[i]?.title || `Design ${i + 1}`,
       ...result,
     });
   }
