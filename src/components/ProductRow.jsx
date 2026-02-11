@@ -25,6 +25,8 @@ export default function ProductRow() {
         isMetaValid
     } = useDesignerStore();
     const activeDesign = activeDesignFromStore || tshirtDesigns?.[activeDesignIndex];
+    const [font, setFont] = useState("Poppins");
+    const [colorFilter, setColorFilter] = useState("all"); // all | light | dark
 
     // ✅ If no designs exist yet, don’t render ProductRow UI (prevents crash)
     if (!activeDesign) {
@@ -37,9 +39,6 @@ export default function ProductRow() {
         );
     }
 
-
-    const [font, setFont] = useState("Poppins");
-    const [colorFilter, setColorFilter] = useState("all"); // all | light | dark
     const filteredColors = regularColors.filter((c) => {
         if (colorFilter === "all") return true;
         return (c.tone || "all") === colorFilter;
