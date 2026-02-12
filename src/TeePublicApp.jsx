@@ -46,14 +46,14 @@ export default function TeePublicApp() {
         <div className="min-h-screen bg-slate-200">
 
             {/* 1. NAVBAR */}
-            <div className="bg-[#1c2432] text-white h-16 flex items-center px-8 shadow-md shrink-0">
-                <div className="font-bold text-2xl tracking-tighter mr-auto">arton360</div>
+            <div className="bg-[#1c2432] text-white h-16 flex items-center px-8 shadow-md shrink-0 justify-end">
+                {/* <div className="font-bold text-2xl tracking-tighter mr-auto">arton360</div>
                 <div className="flex gap-6 text-sm font-medium">
                     <span className="opacity-70">Shop</span>
                     <span className="text-white hover:text-blue-300 cursor-pointer">Create</span>
-                </div>
+                </div> */}
                 <Button
-                    className="ml-6 bg-[#6c85e3] hover:bg-[#5b73d1] text-white font-bold"
+                    className="bg-[#6c85e3] hover:bg-[#5b73d1] text-white font-bold"
                     onClick={onPick}
                 >
                 Upload Art
