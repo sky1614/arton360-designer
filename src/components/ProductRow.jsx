@@ -210,11 +210,6 @@ export default function ProductRow() {
                             </button>
 
                             {/* Scale Slider (Visual only for now) */}
-                            <div className="flex-1 flex items-center gap-2 ml-4">
-                                <span>Scale</span>
-                                <input type="range" className="w-full h-1 bg-gray-500 rounded-lg appearance-none cursor-pointer" />
-                                <span>100%</span>
-                            </div>
                         </div>
                     </div>
                 </div>
