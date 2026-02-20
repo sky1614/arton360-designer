@@ -27,6 +27,7 @@ export default function ProductRow() {
     const activeDesign = activeDesignFromStore || tshirtDesigns?.[activeDesignIndex];
     const [font, setFont] = useState("Poppins");
     const [colorFilter, setColorFilter] = useState("all"); // all | light | dark
+    const [publishing, setPublishing] = useState(false);
 
     // ✅ If no designs exist yet, don’t render ProductRow UI (prevents crash)
     if (!activeDesign) {
@@ -90,25 +91,30 @@ export default function ProductRow() {
     };
 
     const onSave = async () => {
+        setPublishing(true);
         const result = await saveDesignToWordPress(canvas);
+        setPublishing(false);
         if (result.success) {
-            alert(`Product Created!\n\nProduct ID: ${result.data.product_id}\nStatus: ${result.data.status}\n\nClick OK to view your product.`);
+            alert("1 art is published");
             if (result.data.product_url) {
                 window.open(result.data.product_url, '_blank');
             }
         } else {
-            alert(`Save Failed\n\n${result.error}\n\nCheck browser console for details.`);
+            alert(`Save Failed\n\n${result.error}`);
         }
     };
+
     const onSaveAll = async () => {
+        setPublishing(true);
         const result = await saveAllDesignsToWordPress(canvas);
+        setPublishing(false);
         if (result.success) {
-            alert(`All ${result.total} designs published successfully!`);
+            alert(`${result.total} art uploaded`);
         } else {
-            alert(`Published ${result.succeeded}/${result.total}. ${result.failed} failed.\n\nCheck console for details.`);
-            console.log("Batch results:", result.results);
+            alert(`${result.succeeded}/${result.total} art uploaded. ${result.failed} failed.`);
         }
     };
+
 
     return (
         <div className="bg-gray-100 p-6 rounded-md">
@@ -273,17 +279,18 @@ export default function ProductRow() {
 
             {/* FINAL SAVE BUTTON AREA */}
             <div className="mt-8 text-center space-y-3">
-                <button onClick={onSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors">
-                    Publish
+                <button onClick={onSave} disabled={publishing} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    {publishing ? "Processing..." : "Publish"}
                 </button>
                 {tshirtDesigns?.length > 1 && (
                     <div>
-                        <button onClick={onSaveAll} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors">
-                            PUBLISH ALL ({tshirtDesigns.length} designs)
+                        <button onClick={onSaveAll} disabled={publishing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            {publishing ? "Processing..." : `PUBLISH ALL (${tshirtDesigns.length} designs)`}
                         </button>
                     </div>
                 )}
             </div>
+
 
         </div>
     );
