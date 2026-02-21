@@ -23,7 +23,8 @@ export function exportPreviewPNG(canvas) {
     canvas.renderAll();
 
     const png = canvas.toDataURL({
-      format: "png",
+      format: "jpeg",
+      quality: 0.7,
       multiplier: 2,
       enableRetinaScaling: true,
     });
