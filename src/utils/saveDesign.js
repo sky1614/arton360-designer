@@ -22,12 +22,17 @@ export function exportPreviewPNG(canvas) {
     canvas.discardActiveObject();
     canvas.renderAll();
 
+    const savedBgColor = canvas.backgroundColor;
+    canvas.backgroundColor = "#ffffff";
+    canvas.renderAll();
     const png = canvas.toDataURL({
       format: "jpeg",
       quality: 0.7,
       multiplier: 2,
       enableRetinaScaling: true,
     });
+    canvas.backgroundColor = savedBgColor;
+    canvas.renderAll();
 
     // restore guides
     guides.forEach((g) => g.set({ opacity: 1 }));
