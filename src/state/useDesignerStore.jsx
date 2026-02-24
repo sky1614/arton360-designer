@@ -188,7 +188,16 @@ export const useDesignerStore = create((set, get) => ({
         sideObj.isFullPrint = false;
       }
 
-      return { tshirtDesigns: designs };
+      // Also update categorySlug in designMetas
+      const metas = [...state.designMetas];
+      if (metas[state.activeDesignIndex]) {
+        metas[state.activeDesignIndex] = {
+          ...metas[state.activeDesignIndex],
+          categorySlug: productType === "graphic-tshirt" ? "graphic-tshirt" : "tshirts",
+        };
+      }
+
+      return { tshirtDesigns: designs, designMetas: metas };
     }),
 
   // ====== Fabric instance ======
