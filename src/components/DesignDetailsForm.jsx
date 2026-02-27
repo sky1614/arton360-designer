@@ -39,7 +39,10 @@ export default function DesignDetailsForm() {
         setProductMeta,
         addTag,
         removeTag,
-        activeDesignIndex
+        activeDesignIndex,
+        albums,
+        albumsLoaded,
+        createAlbum,
     } = useDesignerStore();
 
     // ---------- PRICING + PRODUCT TYPE ----------

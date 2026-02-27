@@ -163,6 +163,7 @@ export async function saveDesignToWordPress(canvasArg) {
       currency: productMeta.currency || "USD",
       artType: productMeta.artType || "",
       vendorMatureFlag: productMeta.vendorMatureFlag || false,
+      albumId: productMeta.albumId || "",
     },
   };
 

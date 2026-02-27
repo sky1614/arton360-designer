@@ -23,6 +23,7 @@ if (typeof window !== "undefined" && !window.ARTON360_LISTENER_ATTACHED) {
       // Fetch available colors from WordPress taxonomy (async, non-blocking)
       if (event.data.site) {
         useDesignerStore.getState().fetchColorsFromWP(event.data.site);
+        useDesignerStore.getState().fetchAlbumsFromWP(event.data.site);
       }
     } catch (err) {
       console.error("[ARTON360] Error handling config message", err);

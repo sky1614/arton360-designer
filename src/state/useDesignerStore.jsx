@@ -160,6 +160,7 @@ const createEmptyMeta = (productType = "tshirts") => ({
   currency: "USD",
   price: "",
   vendorMatureFlag: false,
+  albumId: "",
 });
 
 export const useDesignerStore = create((set, get) => ({
@@ -204,6 +205,54 @@ export const useDesignerStore = create((set, get) => ({
   canvas: null,
   setCanvas: (c) => set({ canvas: c }),
   regularColors: REGULAR_COLORS,
+  albums: [],
+  albumsLoaded: false,
+
+  fetchAlbumsFromWP: async (siteUrl) => {
+    try {
+      const url = `${siteUrl}/wp-json/arton360/v1/albums`;
+      const resp = await fetch(url, {
+        credentials: "include",
+        headers: { "X-WP-Nonce": window.ARTON360?.nonce || "" },
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const albums = await resp.json();
+      if (Array.isArray(albums)) {
+        console.log(`[ARTON360] Loaded ${albums.length} albums`);
+        set({ albums, albumsLoaded: true });
+      }
+    } catch (err) {
+      console.warn("[ARTON360] Failed to fetch albums:", err.message);
+      set({ albumsLoaded: true });
+    }
+  },
+
+  createAlbum: async (name) => {
+    const config = window.ARTON360 || {};
+    if (!config.site || !config.nonce) return null;
+    try {
+      const resp = await fetch(`${config.site}/wp-json/arton360/v1/albums`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": config.nonce,
+        },
+        body: JSON.stringify({ name }),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const newAlbum = await resp.json();
+      if (newAlbum.id) {
+        set((state) => ({ albums: [...state.albums, newAlbum] }));
+        return newAlbum;
+      }
+      return null;
+    } catch (err) {
+      console.error("[ARTON360] Failed to create album:", err.message);
+      return null;
+    }
+  },
+
 
   // ====== Dynamic color loading from WordPress taxonomy ======
   colorsLoaded: false,
