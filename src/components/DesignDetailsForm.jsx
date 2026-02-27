@@ -70,6 +70,9 @@ export default function DesignDetailsForm() {
         price: "",
         vendorMatureFlag: false,
     };
+    const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
+    const [newAlbumName, setNewAlbumName] = useState("");
+    const [albumCreating, setAlbumCreating] = useState(false);
 
     const commitTag = () => {
         const raw = tagInput.trim();
@@ -117,13 +120,65 @@ export default function DesignDetailsForm() {
                         <div className="mb-7">
                             <label className="block text-lg font-semibold text-gray-900 mb-1.5">Album</label>
                             <div className="text-sm text-gray-600 mb-3">(Optional)</div>
-                            <select className="w-full h-11 border border-gray-300 rounded-lg bg-gray-50 px-4 py-2.5 text-base text-gray-700 shadow-sm outline-none cursor-pointer transition-all hover:bg-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                                <option>No Available Albums</option>
-                            </select>
-                            <button className="mt-2.5 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors">
-                                Manage Albums
-                            </button>
+                            {!isCreatingAlbum ? (
+                                <>
+                                    <select
+                                        className="w-full h-11 border border-gray-300 rounded-lg bg-white px-4 py-2.5 text-base text-gray-700 shadow-sm outline-none cursor-pointer transition-all hover:bg-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                        value={productMeta.albumId || ""}
+                                        onChange={(e) => {
+                                            if (e.target.value === "__create__") {
+                                                setIsCreatingAlbum(true);
+                                            } else {
+                                                setProductMeta({ albumId: e.target.value });
+                                            }
+                                        }}
+                                    >
+                                        <option value="">No Album</option>
+                                        {albums.map((album) => (
+                                            <option key={album.id} value={album.id}>{album.name}</option>
+                                        ))}
+                                        <option value="__create__">+ Create New Album</option>
+                                    </select>
+                                    {!albumsLoaded && <div className="text-xs text-gray-400 mt-1">Loading albums...</div>}
+                                </>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        className="flex-1 h-11 border border-gray-300 rounded-lg bg-white px-4 py-2.5 text-base text-gray-900 placeholder-gray-400 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                        placeholder="Album name"
+                                        value={newAlbumName}
+                                        onChange={(e) => setNewAlbumName(e.target.value)}
+                                        disabled={albumCreating}
+                                        autoFocus
+                                    />
+                                    <button
+                                        className="px-4 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+                                        disabled={albumCreating || !newAlbumName.trim()}
+                                        onClick={async () => {
+                                            setAlbumCreating(true);
+                                            const created = await createAlbum(newAlbumName.trim());
+                                            setAlbumCreating(false);
+                                            if (created) {
+                                                setProductMeta({ albumId: String(created.id) });
+                                                setNewAlbumName("");
+                                                setIsCreatingAlbum(false);
+                                            } else {
+                                                alert("Failed to create album.");
+                                            }
+                                        }}
+                                    >
+                                        {albumCreating ? "..." : "Create"}
+                                    </button>
+                                    <button
+                                        className="px-3 h-11 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors"
+                                        onClick={() => { setIsCreatingAlbum(false); setNewAlbumName(""); }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
                         </div>
+
                         {/* Pricing Section */}
                         <div className="mb-7">
                             <label className="block text-lg font-semibold text-gray-900 mb-1.5">Pricing</label>

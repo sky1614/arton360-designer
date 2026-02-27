@@ -351,7 +351,6 @@ export const useDesignerStore = create((set, get) => ({
       return { activeDesignIndex: clamped, designMetas: metas };
     }),
 
-
   nextDesign: () =>
     set((state) => {
       const total = state.tshirtDesigns.length;
@@ -369,6 +368,24 @@ export const useDesignerStore = create((set, get) => ({
       }
 
       return { activeDesignIndex: newIndex, designMetas: metas };
+    }),
+  
+  removeDesign: (index) =>
+    set((state) => {
+      const designs = [...state.tshirtDesigns];
+      const metas = [...state.designMetas];
+      if (designs.length === 0) return {};
+      const i = index !== undefined ? index : state.activeDesignIndex;
+      if (i < 0 || i >= designs.length) return {};
+      designs.splice(i, 1);
+      metas.splice(i, 1);
+      let newIndex = state.activeDesignIndex;
+      if (designs.length === 0) {
+        newIndex = 0;
+      } else if (newIndex >= designs.length) {
+        newIndex = designs.length - 1;
+      }
+      return { tshirtDesigns: designs, designMetas: metas, activeDesignIndex: newIndex };
     }),
 
   prevDesign: () =>
