@@ -29,6 +29,7 @@ export default function ProductRow() {
     const [font, setFont] = useState("Poppins");
     const [colorFilter, setColorFilter] = useState("all"); // all | light | dark
     const [publishing, setPublishing] = useState(false);
+    const publishingRef = useRef(false);
 
     const onDeleteDesign = () => {
         if (!confirm(`Delete design ${activeDesignIndex + 1} of ${tshirtDesigns.length}? This cannot be undone.`)) return;
@@ -99,30 +100,42 @@ export default function ProductRow() {
     };
 
     const onSave = async () => {
+        if (publishingRef.current) return;
+        publishingRef.current = true;
         setPublishing(true);
-        const result = await saveDesignToWordPress(canvas);
-        setPublishing(false);
-        if (result.success) {
-            alert("1 art is published");
-            if (result.data.product_url) {
-                window.open(result.data.product_url, '_blank');
+        try {
+            const result = await saveDesignToWordPress(canvas);
+            if (result.success) {
+                alert("1 art is published");
+                if (result.data.product_url) {
+                    window.open(result.data.product_url, '_blank');
+                }
+            } else {
+                alert(`Save Failed\n\n${result.error}`);
             }
-        } else {
-            alert(`Save Failed\n\n${result.error}`);
+        } finally {
+            publishingRef.current = false;
+            setPublishing(false);
         }
     };
+
 
     const onSaveAll = async () => {
+        if (publishingRef.current) return;
+        publishingRef.current = true;
         setPublishing(true);
-        const result = await saveAllDesignsToWordPress(canvas);
-        setPublishing(false);
-        if (result.success) {
-            alert(`${result.total} art uploaded`);
-        } else {
-            alert(`${result.succeeded}/${result.total} art uploaded. ${result.failed} failed.`);
+        try {
+            const result = await saveAllDesignsToWordPress(canvas);
+            if (result.success) {
+                alert(`${result.total} art uploaded`);
+            } else {
+                alert(`${result.succeeded}/${result.total} art uploaded. ${result.failed} failed.`);
+            }
+        } finally {
+            publishingRef.current = false;
+            setPublishing(false);
         }
     };
-
 
     return (
         <div className="bg-gray-100 p-6 rounded-md">
