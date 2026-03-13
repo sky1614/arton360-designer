@@ -161,6 +161,7 @@ const createEmptyMeta = (productType = "tshirts") => ({
   price: "",
   vendorMatureFlag: false,
   albumId: "",
+  publishedUrl: "",
 });
 
 export const useDesignerStore = create((set, get) => ({
@@ -645,6 +646,16 @@ export const useDesignerStore = create((set, get) => ({
       };
 
     }),
+  
+    // Reset everything to fresh empty state (after publishing)
+  resetAll: () =>
+    set({
+      tshirtDesigns: [],
+      designMetas: [],
+      activeDesignIndex: 0,
+      activeSide: "front",
+    }),  
+    
   updateDesignItem: (designId, patch) =>
     set((state) => {
       const designs = [...state.tshirtDesigns];

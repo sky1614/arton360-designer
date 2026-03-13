@@ -23,7 +23,8 @@ export default function ProductRow() {
         addMultipleSame,
         addMultipleSeparate,
         isMetaValid,
-        removeDesign
+        removeDesign,
+        resetAll,
     } = useDesignerStore();
     const activeDesign = activeDesignFromStore || tshirtDesigns?.[activeDesignIndex];
     const [font, setFont] = useState("Poppins");
@@ -107,6 +108,8 @@ export default function ProductRow() {
             const result = await saveDesignToWordPress(canvas);
             if (result.success) {
                 alert("1 art is published");
+                if (canvas) canvas.clear();
+                resetAll();
                 if (result.data.product_url) {
                     window.open(result.data.product_url, '_blank');
                 }

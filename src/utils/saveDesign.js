@@ -199,6 +199,8 @@ export async function saveDesignToWordPress(canvasArg) {
     console.log("Response data:", data);
 
     if (response.ok && data.ok) {
+      const pubIdx = useDesignerStore.getState().activeDesignIndex;
+      useDesignerStore.getState().setProductMetaForIndex(pubIdx, { publishedUrl: data.product_url || "published" });
       return { success: true, data };
     } else {
       const errorMsg =
@@ -236,6 +238,12 @@ export async function saveAllDesignsToWordPress(canvasArg) {
   const results = [];
 
   for (let i = 0; i < total; i++) {
+    const currentMeta = useDesignerStore.getState().designMetas[i];
+    if (currentMeta?.publishedUrl) {
+      console.log(`=== BATCH PUBLISH ${i + 1}/${total} — SKIPPED (already published) ===`);
+      results.push({ index: i, title: currentMeta.title || `Design ${i + 1}`, success: true, skipped: true });
+      continue;
+    }
     console.log(`=== BATCH PUBLISH ${i + 1}/${total} ===`);
 
     // Switch to this design and wait for canvas to re-render
