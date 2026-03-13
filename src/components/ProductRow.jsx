@@ -131,9 +131,12 @@ export default function ProductRow() {
             const result = await saveAllDesignsToWordPress(canvas);
             if (result.success) {
                 alert(`${result.total} art uploaded`);
+                if (canvas) canvas.clear();
+                resetAll();
             } else {
                 alert(`${result.succeeded}/${result.total} art uploaded. ${result.failed} failed.`);
             }
+
         } finally {
             publishingRef.current = false;
             setPublishing(false);
