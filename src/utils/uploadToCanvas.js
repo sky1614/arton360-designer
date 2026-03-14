@@ -1,7 +1,9 @@
 import { fitIntoBox } from "./fit";
 
-const MAX_W = 2200;
-const MAX_H = 3000;
+const MIN_W = 2200;
+const MIN_H = 3000;
+const FULL_W = 4000;
+const FULL_H = 5455;
 const MAX_BATCH = 50;
 
 const getDims = (url) =>
@@ -39,11 +41,35 @@ export async function uploadFilesToCanvas({
     })
   );
 
-  const accepted = staged.filter(({ w, h }) => w > 0 && h > 0);
-
-  if (!accepted.length) {
+  // Reject unreadable images
+  const readable = staged.filter(({ w, h }) => w > 0 && h > 0);
+  if (!readable.length) {
     alert("Could not read image dimensions. Try a different file.");
     return { ok: false, reason: "BAD_IMAGES" };
+  }
+
+  // Reject images below minimum 2200x3000
+  const tooSmall = readable.filter(({ w, h }) => w < MIN_W || h < MIN_H);
+  const accepted = readable.filter(({ w, h }) => w >= MIN_W && h >= MIN_H);
+
+  if (tooSmall.length > 0) {
+    alert(
+      `${tooSmall.length} image(s) rejected — minimum size is ${MIN_W}x${MIN_H}px.\n` +
+      tooSmall.map(({ file, w, h }) => `  ${file.name}: ${w}x${h}px`).join("\n")
+    );
+  }
+
+  if (!accepted.length) {
+    return { ok: false, reason: "TOO_SMALL" };
+  }
+
+  // Warn if below 4000x5455 (not all products will be enabled)
+  const belowFull = accepted.filter(({ w, h }) => w < FULL_W || h < FULL_H);
+  if (belowFull.length > 0) {
+    alert(
+      `Note: ${belowFull.length} image(s) are below ${FULL_W}x${FULL_H}px.\n` +
+      `Some products may not be available for these designs.`
+    );
   }
 
   const items = accepted.map(({ url }) => ({ url }));

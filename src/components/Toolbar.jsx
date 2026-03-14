@@ -8,9 +8,8 @@ import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
 
 const FONTS = ["Poppins", "Roboto", "Montserrat", "Open Sans", "Raleway"];
 
-
-const MAX_W = 2200;
-const MAX_H = 3000;
+const MIN_W = 2200;
+const MIN_H = 3000;
 const MAX_BATCH = 50;
 
 export default function Toolbar() {
