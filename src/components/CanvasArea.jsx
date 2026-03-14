@@ -634,7 +634,10 @@ export default function CanvasArea() {
                   const H = img._element?.naturalHeight || img.height;
 
                   // ✅ Use the computed print AREA (not undefined "box")
-                  const { scale, left, top } = fitIntoBox(W, H, AREA, { paddingRatio: 0.06 });
+                  const { scale, left, top } = fitIntoBox(W, H, AREA, {
+                    paddingRatio: printType === "mask" ? 0 : 0.06,
+                    cover: printType === "mask",
+                  });
 
                   img.set({ originX: "left", originY: "top" });
                   img.scale(scale);

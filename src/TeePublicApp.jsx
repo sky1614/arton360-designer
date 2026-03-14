@@ -5,7 +5,7 @@ import ProductRow from "./components/ProductRow";
 import { Button } from "@/components/ui/button";
 import { useDesignerStore } from "./state/useDesignerStore";
 import { uploadFilesToCanvas } from "./utils/uploadToCanvas";
-import DesignNav from "./components/DesignNav";
+//import DesignNav from "./components/DesignNav";
 
 export default function TeePublicApp() {
     const fileRef = useRef(null);
@@ -102,12 +102,15 @@ export default function TeePublicApp() {
                     </div>
                 </div>
 
+                {/* Resolution requirements */}
+                <div className="text-center text-sm text-gray-500 mt-3 space-y-1">
+                    <p className="font-semibold text-gray-700">Image Requirements</p>
+                    <p>Minimum resolution: <strong>2200 x 3000 px</strong> at <strong>300 dpi</strong></p>
+                    <p>Format: <strong>Transparent PNG</strong> recommended</p>
+                </div>
 
                 {/* 3. DESIGN DETAILS FORM (Gray Box) */}
                 <DesignDetailsForm />
-
-                {/* DESIGN NAV (for multiple uploads) */}
-                {tshirtDesigns.length > 0 ? <DesignNav /> : null}
 
                 {/* 4. PRODUCT ROW (White Box with Canvas) */}
                 {tshirtDesigns.length > 0 ? <ProductRow /> : null}

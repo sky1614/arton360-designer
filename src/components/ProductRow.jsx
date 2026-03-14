@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
 import CanvasArea from "./CanvasArea";
+import DesignNav from "./DesignNav";
 import WebFont from "webfontloader";
 import { uploadFilesToCanvas } from "../utils/uploadToCanvas";
 import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
@@ -246,6 +247,13 @@ export default function ProductRow() {
                         </div>
                     </div>
                 </div>
+
+                {/* PREV / NEXT below canvas */}
+                {tshirtDesigns.length > 1 && (
+                    <div className="md:w-[580px]">
+                        <DesignNav />
+                    </div>
+                )}
 
                 {/* COLOR GRID (Bottom Area) */}
                 <div className="mt-8 pt-6 border-t border-gray-200">
