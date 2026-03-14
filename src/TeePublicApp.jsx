@@ -64,7 +64,7 @@ export default function TeePublicApp() {
             <input
                 ref={fileRef}
                 type="file"
-                accept="image/png"
+                accept="image/png, image/jpeg, image/jpg"
                 multiple
                 className="hidden"
                 onChange={onFilesSelected}
@@ -104,7 +104,7 @@ export default function TeePublicApp() {
 
                 {/* Resolution requirements */}
                 <div className="text-center text-sm text-gray-600 mt-3 space-y-1">
-                    <p>High-resolution transparent <strong>.PNG</strong> at <strong>300dpi</strong>.</p>
+                    <p>High-resolution <strong>.JPG</strong> or transparent <strong>.PNG</strong> at <strong>300dpi</strong>.</p>
                     <p>Minimum dimensions of at least <strong>2200px by 3000px</strong> (not including outer transparent pixels).</p>
                     <p>To enable all products, your file must be at least <strong>4000px by 5455px</strong>.</p>
                     <p className="text-blue-600 font-semibold cursor-pointer">See our design guide for help.</p>
