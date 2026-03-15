@@ -101,6 +101,7 @@ export default function CanvasArea() {
       // --- Clamp objects inside printable AREA ---
       const clampToArea = (obj, area) => {
         if (!obj || obj._isGuide || obj === c.backgroundImage) return;
+        if (c.__printType === "mask") return;
 
         // keep inside bounds using the object's bounding box
         obj.setCoords();
@@ -131,6 +132,7 @@ export default function CanvasArea() {
 
       const limitScaleToArea = (obj, area) => {
         if (!obj || obj._isGuide || obj === c.backgroundImage) return;
+         if (c.__printType === "mask") return;
 
         // stop scaling beyond area (bounding box must fit)
         obj.setCoords();
@@ -522,7 +524,15 @@ export default function CanvasArea() {
               // ✅ AREA derived from mask bounds (future-proof)
               maskImg.setCoords();
               const b = maskImg.getBoundingRect(true, true);
-              AREA = { left: b.left, top: b.top, width: b.width, height: b.height };
+              const AREA_RATIO = 0.62;  // adjust: 0.65 = smaller, 0.8 = bigger
+              const areaW = b.width * AREA_RATIO;
+              const areaH = b.height * AREA_RATIO;
+              AREA = {
+                left: b.left + (b.width - areaW) / 2,
+                top: b.top + (b.height - areaH) / 2,
+                width: areaW,
+                height: areaH,
+              };
 
               resolve();
             },
@@ -635,9 +645,9 @@ export default function CanvasArea() {
 
                   // ✅ Use the computed print AREA (not undefined "box")
                   const { scale, left, top } = fitIntoBox(W, H, AREA, {
-                    paddingRatio: printType === "mask" ? 0 : 0.06,
-                    cover: printType === "mask",
-                  });
+                  paddingRatio: 0,
+                  cover: printType === "mask",
+                });
 
                   img.set({ originX: "left", originY: "top" });
                   img.scale(scale);
