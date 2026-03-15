@@ -524,7 +524,7 @@ export default function CanvasArea() {
               // ✅ AREA derived from mask bounds (future-proof)
               maskImg.setCoords();
               const b = maskImg.getBoundingRect(true, true);
-              const AREA_RATIO = 0.62;  // adjust: 0.65 = smaller, 0.8 = bigger
+              const AREA_RATIO = 0.75;  // adjust: 0.65 = smaller, 0.8 = bigger
               const areaW = b.width * AREA_RATIO;
               const areaH = b.height * AREA_RATIO;
               AREA = {
@@ -541,14 +541,15 @@ export default function CanvasArea() {
         });
       } else {
         // ✅ 2) BOX MODE (your current chest logic)
-        AREA = full
-          ? getPrintArea(true, side)
-          : {
-            left: bgLeft + bgW * 0.32,
-            top: bgTop + bgH * 0.28,
-            width: bgW * 0.36,
-            height: bgH * 0.42,
-          };
+        AREA = getPrintArea(full, side);
+        // AREA = full
+        //   ? getPrintArea(true, side)
+        //   : {
+        //     left: bgLeft + bgW * 0.318,
+        //     top: bgTop + bgH * 0.218,
+        //     width: bgW * 0.38,
+        //     height: bgH * 0.44,
+        //   };
       }
 
       areaRef.current = AREA;

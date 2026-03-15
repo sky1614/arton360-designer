@@ -25,7 +25,7 @@
 //   return PRINT; // old chest print box
 // }
 
-const PRINT = { left: 210, top: 200, width: 180, height: 280 };
+const PRINT = { left: 200, top: 200, width: 210, height: 300 };
 export default PRINT;
 
 export const FULL_PRINT_FRONT = { left: 25, top: 50, width: 550, height: 700 };
