@@ -59,8 +59,42 @@ export default function CanvasArea() {
         height: 700,
         preserveObjectStacking: true,
         selection: true,
+        allowTouchScrolling: true,
       });
       c.uniformScaling = true;
+      // ===== SCROLL FIX: Ctrl+scroll = zoom canvas, normal scroll = scroll page =====
+      let zoomToast = null;
+      c.on('mouse:wheel', function (opt) {
+        if (opt.e.ctrlKey) {
+          // Ctrl held → zoom the canvas
+          opt.e.preventDefault();
+          opt.e.stopPropagation();
+          const delta = opt.e.deltaY;
+          let zoom = c.getZoom();
+          zoom *= 0.999 ** delta;
+          zoom = Math.min(Math.max(zoom, 0.5), 3); // limit: 0.5x to 3x
+          c.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+          c.requestRenderAll();
+        } else {
+          // No Ctrl → let page scroll normally
+          // Show hint toast (once, briefly)
+          const wrapper = document.getElementById('canvas-wrapper');
+          if (!zoomToast && wrapper) {
+            zoomToast = document.createElement('div');
+            zoomToast.textContent = 'Hold Ctrl + scroll to zoom';
+            zoomToast.style.cssText = 'position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;z-index:50;pointer-events:none;transition:opacity 0.3s;';
+            wrapper.appendChild(zoomToast);
+            setTimeout(() => {
+              if (zoomToast) zoomToast.style.opacity = '0';
+              setTimeout(() => {
+                if (zoomToast && zoomToast.parentNode) zoomToast.parentNode.removeChild(zoomToast);
+                zoomToast = null;
+              }, 300);
+            }, 1500);
+          }
+        }
+      });
+
       // ✅ apply mask to any newly added object (uploads, paste, etc.)
       const applyMaskToObject = (obj) => {
         if (!obj) return;
