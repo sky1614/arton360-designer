@@ -43,7 +43,7 @@ export default function TeePublicApp() {
 
 
     return (
-        <div className="min-h-screen bg-slate-200">
+        <div className="bg-slate-200">
 
             {/* 1. NAVBAR */}
             <div className="bg-[#1c2432] text-white h-16 flex items-center px-8 shadow-md shrink-0 justify-end">
