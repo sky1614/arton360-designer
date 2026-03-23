@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import DesignDetailsForm from "./components/DesignDetailsForm";
 import ProductRow from "./components/ProductRow";
 //import { Button } from "./components/ui/button";
@@ -9,6 +9,16 @@ import { uploadFilesToCanvas } from "./utils/uploadToCanvas";
 
 export default function TeePublicApp() {
     const fileRef = useRef(null);
+
+    // Send height to WordPress parent for iframe resizing
+    useEffect(() => {
+        const sendHeight = () => {
+            window.parent.postMessage({ type: 'resize', height: document.body.scrollHeight }, '*');
+        };
+        sendHeight();
+        const interval = setInterval(sendHeight, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const { canvas, addMultipleSame, addMultipleSeparate, tshirtDesigns, activeDesignIndex } = useDesignerStore();
     const active = tshirtDesigns?.[activeDesignIndex];
