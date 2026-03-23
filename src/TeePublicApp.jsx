@@ -13,7 +13,12 @@ export default function TeePublicApp() {
     // Send height to WordPress parent for iframe resizing
     useEffect(() => {
         const sendHeight = () => {
-            window.parent.postMessage({ type: 'resize', height: document.body.scrollHeight }, '*');
+            const root = document.getElementById('root');
+            const content = root?.firstElementChild;
+            const h = content ? content.offsetHeight : root?.offsetHeight || 0;
+            if (h > 100) {
+                window.parent.postMessage({ type: 'resize', height: h }, '*');
+            }
         };
         sendHeight();
         const interval = setInterval(sendHeight, 1000);
