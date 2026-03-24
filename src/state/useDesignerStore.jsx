@@ -16,54 +16,54 @@ const ASSETS_BASE =
 //
 // NEW: use your real mockup filenames inside /public/mockups
 const MOCKUPS_FRONT = {
-  white: `${ASSETS_BASE}/white.png`,
-  black: `${ASSETS_BASE}/black.png`,
-  charcoal: `${ASSETS_BASE}/charcoal.png`,
-  cardinal: `${ASSETS_BASE}/cardinal.png`,
-  daisy: `${ASSETS_BASE}/daisy.png`,
-  azalea: `${ASSETS_BASE}/azalea.png`,
-  "brown-savanna": `${ASSETS_BASE}/brown-savanna.png`
+  white: `${ASSETS_BASE}/white.jpg`,
+  black: `${ASSETS_BASE}/black.jpg`,
+  charcoal: `${ASSETS_BASE}/charcoal.jpg`,
+  cardinal: `${ASSETS_BASE}/cardinal.jpg`,
+  daisy: `${ASSETS_BASE}/daisy.jpg`,
+  azalea: `${ASSETS_BASE}/azalea.jpg`,
+  "brown-savanna": `${ASSETS_BASE}/brown-savanna.jpg`
 };
 
 //
 // === REGULAR TEE (BOX) MOCKUP MAPPING ===
-// files live in /public/mockups/*.png
+// files live in /public/mockups/*.jpg
 //
 const REGULAR_COLORS = [
-  { key: "white", file: "white.png", hex: "#ffffff", label: "White" },
-  { key: "black", file: "black.png", hex: "#000000", label: "Black" },
-  { key: "charcoal", file: "charcoal.png", hex: "#36454F", label: "Charcoal" },
-  { key: "cardinal", file: "cardinal.png", hex: "#8B0000", label: "Cardinal" },
-  { key: "daisy", file: "daisy.png", hex: "#FFD100", label: "Daisy" },
-  { key: "azalea", file: "azalea.png", hex: "#FF66B2", label: "Azalea" },
-  { key: "brown-savanna", file: "brown-savanna.png", hex: "#6B3F2A", label: "Brown Savanna" },
+  { key: "white", file: "white.jpg", hex: "#ffffff", label: "White" },
+  { key: "black", file: "black.jpg", hex: "#000000", label: "Black" },
+  { key: "charcoal", file: "charcoal.jpg", hex: "#36454F", label: "Charcoal" },
+  { key: "cardinal", file: "cardinal.jpg", hex: "#8B0000", label: "Cardinal" },
+  { key: "daisy", file: "daisy.jpg", hex: "#FFD100", label: "Daisy" },
+  { key: "azalea", file: "azalea.jpg", hex: "#FF66B2", label: "Azalea" },
+  { key: "brown-savanna", file: "brown-savanna.jpg", hex: "#6B3F2A", label: "Brown Savanna" },
   // ✅ NEW COLORS (add mockups in /public/mockups/ with these filenames)
-  { key: "ash", file: "ash.png", hex: "#d6d6d6", label: "Ash", tone: "light" },
-  { key: "carolina-blue", file: "carolina-blue.png", hex: "#66aee8", label: "Carolina Blue", tone: "light" },
-  { key: "dark-chocolate", file: "dark-chocolate.png", hex: "#3b2616", label: "Dark Chocolate", tone: "dark" },
-  { key: "forest-green", file: "forest-green.png", hex: "#0b3d2e", label: "Forest Green", tone: "dark" },
-  { key: "gold", file: "gold.png", hex: "#f2c100", label: "Gold", tone: "light" },
-  { key: "graphite-heather", file: "graphite-heather.png", hex: "#6b6f74", label: "Graphite Heather", tone: "dark" },
-  { key: "heliconia", file: "heliconia.png", hex: "#ff2ea6", label: "Heliconia", tone: "light" },
-  { key: "ice-grey", file: "ice-grey.png", hex: "#e8eaed", label: "Ice Grey", tone: "light" },
-  { key: "irish-green", file: "irish-green.png", hex: "#00a651", label: "Irish Green", tone: "light" },
-  { key: "light-blue", file: "light-blue.png", hex: "#b7d9f7", label: "Light Blue", tone: "light" },
-  { key: "light-pink", file: "light-pink.png", hex: "#ffd1dc", label: "Light Pink", tone: "light" },
-  { key: "lime", file: "lime.png", hex: "#b7e300", label: "Lime", tone: "light" },
-  { key: "maroon", file: "maroon.png", hex: "#5a0f1b", label: "Maroon", tone: "dark" },
-  { key: "military-green", file: "military-green.png", hex: "#4b5d3a", label: "Military Green", tone: "dark" },
-  { key: "natural", file: "natural.png", hex: "#f1e4cf", label: "Natural", tone: "light" },
-  { key: "navy", file: "navy.png", hex: "#0b1f3a", label: "Navy", tone: "dark" },
-  { key: "orange", file: "orange.png", hex: "#ff7a00", label: "Orange", tone: "light" },
-  { key: "red", file: "red.png", hex: "#d0021b", label: "Red", tone: "dark" },
-  { key: "royal", file: "royal.png", hex: "#1f4ed8", label: "Royal", tone: "dark" },
-  { key: "sand", file: "sand.png", hex: "#d9c6a5", label: "Sand", tone: "light" },
-  { key: "sapphire", file: "sapphire.png", hex: "#0f52ba", label: "Sapphire", tone: "dark" },
-  { key: "sky", file: "sky.png", hex: "#87ceeb", label: "Sky", tone: "light" },
-  { key: "sport-grey", file: "sport-grey.png", hex: "#c9c9c9", label: "Sport Grey", tone: "light" },
-  { key: "tropical-blue", file: "tropical-blue.png", hex: "#00a6d6", label: "Tropical Blue", tone: "light" },
-  { key: "turf-green", file: "turf-green.png", hex: "#2e8b57", label: "Turf Green", tone: "dark" },
-  { key: "yellow-haze", file: "yellow-haze.png", hex: "#f7e36d", label: "Yellow Haze", tone: "light" }
+  { key: "ash", file: "ash.jpg", hex: "#d6d6d6", label: "Ash", tone: "light" },
+  { key: "carolina-blue", file: "carolina-blue.jpg", hex: "#66aee8", label: "Carolina Blue", tone: "light" },
+  { key: "dark-chocolate", file: "dark-chocolate.jpg", hex: "#3b2616", label: "Dark Chocolate", tone: "dark" },
+  { key: "forest-green", file: "forest-green.jpg", hex: "#0b3d2e", label: "Forest Green", tone: "dark" },
+  { key: "gold", file: "gold.jpg", hex: "#f2c100", label: "Gold", tone: "light" },
+  { key: "graphite-heather", file: "graphite-heather.jpg", hex: "#6b6f74", label: "Graphite Heather", tone: "dark" },
+  { key: "heliconia", file: "heliconia.jpg", hex: "#ff2ea6", label: "Heliconia", tone: "light" },
+  { key: "ice-grey", file: "ice-grey.jpg", hex: "#e8eaed", label: "Ice Grey", tone: "light" },
+  { key: "irish-green", file: "irish-green.jpg", hex: "#00a651", label: "Irish Green", tone: "light" },
+  { key: "light-blue", file: "light-blue.jpg", hex: "#b7d9f7", label: "Light Blue", tone: "light" },
+  { key: "light-pink", file: "light-pink.jpg", hex: "#ffd1dc", label: "Light Pink", tone: "light" },
+  { key: "lime", file: "lime.jpg", hex: "#b7e300", label: "Lime", tone: "light" },
+  { key: "maroon", file: "maroon.jpg", hex: "#5a0f1b", label: "Maroon", tone: "dark" },
+  { key: "military-green", file: "military-green.jpg", hex: "#4b5d3a", label: "Military Green", tone: "dark" },
+  { key: "natural", file: "natural.jpg", hex: "#f1e4cf", label: "Natural", tone: "light" },
+  { key: "navy", file: "navy.jpg", hex: "#0b1f3a", label: "Navy", tone: "dark" },
+  { key: "orange", file: "orange.jpg", hex: "#ff7a00", label: "Orange", tone: "light" },
+  { key: "red", file: "red.jpg", hex: "#d0021b", label: "Red", tone: "dark" },
+  { key: "royal", file: "royal.jpg", hex: "#1f4ed8", label: "Royal", tone: "dark" },
+  { key: "sand", file: "sand.jpg", hex: "#d9c6a5", label: "Sand", tone: "light" },
+  { key: "sapphire", file: "sapphire.jpg", hex: "#0f52ba", label: "Sapphire", tone: "dark" },
+  { key: "sky", file: "sky.jpg", hex: "#87ceeb", label: "Sky", tone: "light" },
+  { key: "sport-grey", file: "sport-grey.jpg", hex: "#c9c9c9", label: "Sport Grey", tone: "light" },
+  { key: "tropical-blue", file: "tropical-blue.jpg", hex: "#00a6d6", label: "Tropical Blue", tone: "light" },
+  { key: "turf-green", file: "turf-green.jpg", hex: "#2e8b57", label: "Turf Green", tone: "dark" },
+  { key: "yellow-haze", file: "yellow-haze.jpg", hex: "#f7e36d", label: "Yellow Haze", tone: "light" }
 ];
 
 /**
@@ -118,16 +118,16 @@ const fullFrontMockup = (color) => {
   const c = normalizeForFull(color);
   switch (c) {
     case "black":
-      return "/mockups/full_mask_tshirt/tshirt_full_black.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_black.jpg";
     case "blue":
-      return "/mockups/full_mask_tshirt/tshirt_full_blue.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_blue.jpg";
     case "grey":
-      return "/mockups/full_mask_tshirt/tshirt_full_grey.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_grey.jpg";
     case "red":
-      return "/mockups/full_mask_tshirt/tshirt_full_red.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_red.jpg";
     case "white":
     default:
-      return "/mockups/full_mask_tshirt/tshirt_full_white.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_white.jpg";
   }
 };
 
@@ -135,16 +135,16 @@ const fullBackMockup = (color) => {
   const c = normalizeForFull(color);
   switch (c) {
     case "black":
-      return "/mockups/full_mask_tshirt/tshirt_full_back_black.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_back_black.jpg";
     case "blue":
-      return "/mockups/full_mask_tshirt/tshirt_full_back_blue.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_back_blue.jpg";
     case "grey":
-      return "/mockups/full_mask_tshirt/tshirt_full_back_grey.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_back_grey.jpg";
     case "red":
-      return "/mockups/full_mask_tshirt/tshirt_full_back_red.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_back_red.jpg";
     case "white":
     default:
-      return "/mockups/full_mask_tshirt/tshirt_full_white_back.png";
+      return "/mockups/full_mask_tshirt/tshirt_full_white_back.jpg";
   }
 };
 
@@ -178,7 +178,7 @@ export const useDesignerStore = create((set, get) => ({
       active.productType = productType;
 
       if (productType === "graphic-tshirt") {
-        sideObj.mockup = "/mockups/graphic_tshirt.png";
+        sideObj.mockup = "/mockups/graphic_tshirt.jpg";
         sideObj.printType = "mask";
         sideObj.maskUrl = "/mockups/graphic_tshirt_mask.png";
         sideObj.isFullPrint = true;
@@ -281,8 +281,8 @@ export const useDesignerStore = create((set, get) => ({
         key: c.key,
         label: c.label,
         hex: c.hex || "#cccccc",
-        file: `${c.key}.png`, // fallback filename
-        mockupUrl: c.mockupUrl || "", // full URL from WP
+        file: `${c.key}.jpg`, // fallback filename
+         mockupUrl: (c.mockupUrl || "").replace(/\.png$/i, ".jpg"), // convert .png to .jpg
         tone: isLightColor(c.hex) ? "light" : "dark",
       }));
 
