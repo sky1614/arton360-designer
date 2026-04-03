@@ -173,7 +173,8 @@ export default function TeePublicApp() {
                         <a href="https://arton360.com/sign-up/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>My Account</a>
                         <a href="https://arton360.com/design-guide/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>ArtOn360 Blog</a>
                         <a href="https://arton360.com/upload-a-design/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Upload a Design</a>
-
+                        
+                    </div>
                 </div>
                 <div style={{ maxWidth: '1000px', margin: '30px auto 0', display: 'flex', justifyContent: 'center', gap: '12px' }}>
                     <a href="#" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: '#333', borderRadius: '50%', textDecoration: 'none', fontSize: '16px', color: '#fff' }}>f</a>
