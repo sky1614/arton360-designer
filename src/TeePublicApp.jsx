@@ -152,26 +152,28 @@ export default function TeePublicApp() {
                     </div>
                     <div style={{ minWidth: '140px' }}>
                         <h4 style={{ color: '#fff', fontSize: '14px', margin: '0 0 12px 0' }}>Support</h4>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Contact Us</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>FAQ</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Refunds &amp; Returns</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Shipping Info</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Size Chart</a>
+                        <a href="https://arton360.com/contact-us/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Contact Us</a>
+                        <a href="https://arton360.com/faq/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>FAQ</a>
+                        <a href="https://arton360.com/refunds-returns/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Refunds &amp; Returns</a>
+                        <a href="https://arton360.com/shipping-info/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Shipping Info</a>
+                        <a href="https://arton360.com/size-chart/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Size Chart</a>
+
                     </div>
                     <div style={{ minWidth: '140px' }}>
                         <h4 style={{ color: '#fff', fontSize: '14px', margin: '0 0 12px 0' }}>About Us</h4>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>All Designs</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Artist Signup</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Featured Artist</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Design Guide</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Earnings</a>
+                        <a href="https://arton360.com/shop-2/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>All Designs</a>
+                        <a href="https://arton360.com/vendor-dashboard/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Artist Signup</a>
+                        <a href="https://arton360.com/about-us/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>About Us</a>
+                        <a href="https://arton360.com/design-guide/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>ArtOn360 Blog</a>
+                        <a href="https://arton360.com/upload-a-design/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Upload a Design</a>
+
                     </div>
                     <div style={{ minWidth: '140px' }}>
                         <h4 style={{ color: '#fff', fontSize: '14px', margin: '0 0 12px 0' }}>Policies</h4>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>My Account</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>ArtOn360 Blog</a>
-                        <a href="#" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Upload a Design</a>
-                    </div>
+                        <a href="https://arton360.com/sign-up/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>My Account</a>
+                        <a href="https://arton360.com/design-guide/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>ArtOn360 Blog</a>
+                        <a href="https://arton360.com/upload-a-design/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Upload a Design</a>
+
                 </div>
                 <div style={{ maxWidth: '1000px', margin: '30px auto 0', display: 'flex', justifyContent: 'center', gap: '12px' }}>
                     <a href="#" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', background: '#333', borderRadius: '50%', textDecoration: 'none', fontSize: '16px', color: '#fff' }}>f</a>
