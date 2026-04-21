@@ -164,6 +164,7 @@ export default function TeePublicApp() {
                         <a href="https://arton360.com/shop-2/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>All Designs</a>
                         <a href="https://arton360.com/vendor-dashboard/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Artist Signup</a>
                         <a href="https://arton360.com/about-us/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>About Us</a>
+                        <a href="mailto:dmca@arton360.com" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>DMCA Copyright</a>
                         <a href="https://arton360.com/design-guide/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>ArtOn360 Blog</a>
                         <a href="https://arton360.com/upload-a-design/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#aaa', textDecoration: 'none', fontSize: '13px', marginBottom: '8px' }}>Upload a Design</a>
 
