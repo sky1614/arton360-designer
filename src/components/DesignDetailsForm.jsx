@@ -96,8 +96,9 @@ export default function DesignDetailsForm() {
             return;
         }
 
+        let response;
         try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -106,7 +107,7 @@ export default function DesignDetailsForm() {
                     "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
-                    model: "qwen/qwen2.5-vl-32b-instruct:free",
+                    model: "google/gemini-flash-1.5-8b",
                     messages: [
                         {
                             role: "user",
@@ -119,6 +120,13 @@ export default function DesignDetailsForm() {
                 })
             });
 
+            if (!response.ok) {
+                const errBody = await response.text();
+                console.error("Response status:", response.status);
+                console.error("Response body:", errBody);
+                throw new Error("API returned " + response.status);
+            }
+
             const data = await response.json();
             let text = data.choices[0].message.content;
             text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -130,12 +138,8 @@ export default function DesignDetailsForm() {
             alert("✅ AI filled the details! Review and edit if needed.");
         } catch (err) {
             console.error("AI auto-fill error:", err);
-            console.error("Response status:", response?.status);
-            const errBody = await response?.text?.();
-            console.error("Response body:", errBody);
             alert("AI auto-fill failed: " + err.message);
-        } 
-        finally {
+        } finally {
             setAiLoading(false);
         }
     };
