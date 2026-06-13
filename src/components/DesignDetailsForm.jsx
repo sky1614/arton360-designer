@@ -103,7 +103,7 @@ export default function DesignDetailsForm() {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + import.meta.env.VITE_OPENROUTER_API_KEY,
-                    "HTTP-Referer": "https://arton360-designer.vercel.app",
+                    "HTTP-Referer": "anthropic/claude-3.5-sonnet",
                     "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
