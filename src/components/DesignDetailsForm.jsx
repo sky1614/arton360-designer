@@ -107,7 +107,7 @@ export default function DesignDetailsForm() {
                     "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
-                    model: "anthropic/claude-3.5-sonnet",
+                    model: "meta-llama/llama-3.2-11b-vision-instruct:free",
                     messages: [
                         {
                             role: "user",
