@@ -48,6 +48,7 @@ export default function DetailsPane() {
   } = useDesignerStore();
 
   const [tagInput, setTagInput] = useState("");
+  const [publishProgress, setPublishProgress] = useState({ active: false, current: 0, total: 0, message: '' });
 
   const activeIndex =
     typeof activeDesignIndex === "number" ? activeDesignIndex : 0;
@@ -89,24 +90,115 @@ export default function DetailsPane() {
   const onSaveAll = async () => {
     const total = tshirtDesigns?.length || 0;
     if (total <= 1) {
-      onSave();
-      return;
+        onSave();
+        return;
     }
-    if (!confirm(`Publish all ${total} designs? Each will be created as a separate product.`)) return;
-    const result = await saveAllDesignsToWordPress(canvas);
-    if (result.success) {
-      alert(`All ${result.succeeded} products created successfully!`);
+    if (!confirm(`Publish all ${total} designs in batches of 5? Each will be created as a separate product.`)) return;
+
+    let succeeded = 0;
+    let failed = 0;
+    const batchSize = 5;
+
+    for (let i = 0; i < total; i += batchSize) {
+        const batchEnd = Math.min(i + batchSize, total);
+        console.log(`Publishing batch ${Math.floor(i/batchSize) + 1}: designs ${i+1} to ${batchEnd}`);
+
+        // Process each design in this batch
+        for (let j = i; j < batchEnd; j++) {
+            try {
+                const result = await saveDesignToWordPress(canvas, j);
+                if (result.success) {
+                    succeeded++;
+                    console.log(`✅ Design ${j+1}/${total} published`);
+                } else {
+                    failed++;
+                    console.log(`❌ Design ${j+1}/${total} failed:`, result.error);
+                }
+            } catch (err) {
+                failed++;
+                console.log(`❌ Design ${j+1}/${total} error:`, err);
+            }
+        }
+
+        // Wait 3 seconds between batches to prevent server overload
+        if (i + batchSize < total) {
+            console.log(`Waiting 3 seconds before next batch...`);
+            await new Promise(r => setTimeout(r, 3000));
+        }
+    }
+
+    if (failed === 0) {
+        alert(`✅ All ${succeeded} products published successfully!`);
     } else {
-      alert(`Published ${result.succeeded}/${result.total}.\n${result.failed} failed.\n\nCheck console for details.`);
-      console.log("Batch results:", result.results);
+        alert(`Published ${succeeded}/${total}.\n${failed} failed.\n\nCheck console for details.`);
     }
-  };
+ };
 
   const commitTag = () => {
     const raw = tagInput.trim();
     if (!raw) return;
     raw.split(",").forEach((t) => addTag(t));
     setTagInput("");
+  };
+
+  const autoFillWithAI = async () => {
+    if (!canvas) return;
+    
+    const previewImg = exportPreviewPNG(canvas);
+    if (!previewImg) {
+        alert("Could not capture design image");
+        return;
+    }
+
+    try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + import.meta.env.VITE_OPENROUTER_API_KEY
+            },
+            body: JSON.stringify({
+                model: "google/gemini-2.0-flash-exp:free",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image_url",
+                                image_url: { url: previewImg }
+                            },
+                            {
+                                type: "text",
+                                text: "Analyze this t-shirt design artwork and respond ONLY with valid JSON, no markdown, no code blocks: {\"title\": \"short catchy product title max 6 words\", \"description\": \"2-3 sentence product description\", \"tags\": [\"tag1\", \"tag2\", \"tag3\", \"tag4\", \"tag5\"]}"
+                            }
+                        ]
+                    }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        let text = data.choices[0].message.content;
+        
+        // Clean up response - remove markdown code blocks if present
+        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        const parsed = JSON.parse(text);
+
+        setProductMeta({
+            title: parsed.title,
+            description: parsed.description,
+        });
+
+        // Add tags
+        parsed.tags.forEach(tag => addTag(tag));
+
+        alert("✅ AI filled the details! Review and edit if needed.");
+
+    } catch (err) {
+        console.error("AI auto-fill error:", err);
+        alert("AI auto-fill failed. Please fill manually.");
+    }
   };
 
   // ---- Price + Currency helpers ----
@@ -127,6 +219,25 @@ export default function DetailsPane() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
           {/* LEFT COLUMN */}
           <div>
+            <button
+                onClick={autoFillWithAI}
+                style={{
+                    background: '#3b3bbe',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                ✨ Auto-fill with AI
+            </button>
             <FieldGroup label="Design Title" helperText="Give your design a name!">
               <StyledInput
                 value={productMeta.title}
@@ -335,6 +446,38 @@ export default function DetailsPane() {
           )}
         </div>
       </div>
+      {/* Progress Bar */}
+      {publishProgress.active && (
+          <div style={{
+              position: 'fixed',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#1c2432',
+              color: '#fff',
+              padding: '16px 24px',
+              borderRadius: '12px',
+              zIndex: 99999,
+              minWidth: '320px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+          }}>
+              <div style={{ marginBottom: '8px', fontSize: '14px' }}>
+                  {publishProgress.message}
+              </div>
+              <div style={{ background: '#333', borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
+                  <div style={{
+                      background: '#3b3bbe',
+                      height: '100%',
+                      width: `${(publishProgress.current / publishProgress.total) * 100}%`,
+                      transition: 'width 0.3s ease',
+                      borderRadius: '6px'
+                  }} />
+              </div>
+              <div style={{ marginTop: '6px', fontSize: '12px', color: '#aaa', textAlign: 'right' }}>
+                  {publishProgress.current}/{publishProgress.total}
+              </div>
+          </div>
+      )}
     </div>
   );
 }

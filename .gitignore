@@ -36,4 +36,5 @@ __pycache__/
 node_modules/
 .venv/
 .node/
+.env.local
 
