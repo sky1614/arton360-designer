@@ -107,7 +107,7 @@ export default function DesignDetailsForm() {
                     "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
-                    model: "google/gemini-flash-1.5-8b",
+                    model: "anthropic/claude-3.5-sonnet",
                     messages: [
                         {
                             role: "user",
