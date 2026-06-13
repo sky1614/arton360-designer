@@ -87,6 +87,7 @@ export default function DesignDetailsForm() {
     const autoFillWithAI = async () => {
         if (!canvas) return;
         setAiLoading(true);
+        console.log("API Key present:", !!import.meta.env.VITE_OPENROUTER_API_KEY);
 
         const previewImg = exportPreviewPNG(canvas);
         if (!previewImg) {
@@ -100,10 +101,12 @@ export default function DesignDetailsForm() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + import.meta.env.VITE_OPENROUTER_API_KEY
+                    "Authorization": "Bearer " + import.meta.env.VITE_OPENROUTER_API_KEY,
+                    "HTTP-Referer": "https://arton360-designer.vercel.app",
+                    "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
-                    model: "google/gemini-2.0-flash-exp:free",
+                    model: "meta-llama/llama-3.2-11b-vision-instruct:free",
                     messages: [
                         {
                             role: "user",
