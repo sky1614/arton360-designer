@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
-
+import { exportPreviewPNG } from "../utils/saveDesign";
 
 // --- Internal Reusable Components for Consistency ---
 
@@ -43,6 +43,7 @@ export default function DesignDetailsForm() {
         albums,
         albumsLoaded,
         createAlbum,
+        canvas,
     } = useDesignerStore();
 
     // ---------- PRICING + PRODUCT TYPE ----------
@@ -80,8 +81,57 @@ export default function DesignDetailsForm() {
         raw.split(",").forEach((t) => addTag(t));
         setTagInput("");
     };
-
     
+    const [aiLoading, setAiLoading] = useState(false);
+
+    const autoFillWithAI = async () => {
+        if (!canvas) return;
+        setAiLoading(true);
+
+        const previewImg = exportPreviewPNG(canvas);
+        if (!previewImg) {
+            alert("Could not capture design image");
+            setAiLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + import.meta.env.VITE_OPENROUTER_API_KEY
+                },
+                body: JSON.stringify({
+                    model: "google/gemini-2.0-flash-exp:free",
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                { type: "image_url", image_url: { url: previewImg } },
+                                { type: "text", text: "Analyze this t-shirt design artwork and respond ONLY with valid JSON, no markdown, no code blocks: {\"title\": \"short catchy product title max 6 words\", \"description\": \"2-3 sentence product description\", \"tags\": [\"tag1\", \"tag2\", \"tag3\", \"tag4\", \"tag5\"]}" }
+                            ]
+                        }
+                    ]
+                })
+            });
+
+            const data = await response.json();
+            let text = data.choices[0].message.content;
+            text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const parsed = JSON.parse(text);
+
+            setProductMeta({ title: parsed.title, description: parsed.description });
+            parsed.tags.forEach(tag => addTag(tag));
+
+            alert("✅ AI filled the details! Review and edit if needed.");
+        } catch (err) {
+            console.error("AI auto-fill error:", err);
+            alert("AI auto-fill failed. Please fill manually.");
+        } finally {
+            setAiLoading(false);
+        }
+    };
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-8">
@@ -93,6 +143,24 @@ export default function DesignDetailsForm() {
 
                     {/* --- LEFT COLUMN --- */}
                     <div>
+                        <button
+                            onClick={autoFillWithAI}
+                            disabled={aiLoading}
+                            style={{
+                                background: '#3b3bbe',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: aiLoading ? 'not-allowed' : 'pointer',
+                                marginBottom: '16px',
+                                opacity: aiLoading ? 0.6 : 1
+                            }}
+                        >
+                            {aiLoading ? "Generating..." : "✨ Auto-fill with AI"}
+                        </button>
                         <FieldGroup
                             label="Design Title"
                             helperText="Give your design a name!"
