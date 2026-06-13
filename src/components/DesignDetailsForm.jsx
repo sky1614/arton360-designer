@@ -106,7 +106,7 @@ export default function DesignDetailsForm() {
                     "X-Title": "ArtOn360 Designer"
                 },
                 body: JSON.stringify({
-                    model: "meta-llama/llama-3.2-11b-vision-instruct:free",
+                    model: "qwen/qwen2.5-vl-32b-instruct:free",
                     messages: [
                         {
                             role: "user",
@@ -130,8 +130,12 @@ export default function DesignDetailsForm() {
             alert("✅ AI filled the details! Review and edit if needed.");
         } catch (err) {
             console.error("AI auto-fill error:", err);
-            alert("AI auto-fill failed. Please fill manually.");
-        } finally {
+            console.error("Response status:", response?.status);
+            const errBody = await response?.text?.();
+            console.error("Response body:", errBody);
+            alert("AI auto-fill failed: " + err.message);
+        } 
+        finally {
             setAiLoading(false);
         }
     };
