@@ -2,6 +2,7 @@
 import { useState, useMemo } from "react";
 import { useDesignerStore } from "../state/useDesignerStore";
 import { saveDesignToWordPress, saveAllDesignsToWordPress } from "../utils/saveDesign";
+import { saveDesignToWordPress, saveAllDesignsToWordPress, exportPreviewPNG } from "../utils/saveDesign";
 
 // --- Internal reusable UI components (TeePublic style) ---
 const FieldGroup = ({ label, helperText, children }) => (
