@@ -145,7 +145,7 @@ export default function ProductRow() {
     };
 
     return (
-        <div className="bg-gray-100 p-6 rounded-md">
+        <div className="bg-gray-100 p-3 md:p-6 rounded-md">
 
             {/* HEADER ROW inside the product card */}
             <div className="flex items-center justify-between bg-black text-white px-4 py-2 rounded-t-md mb-0">
@@ -156,13 +156,13 @@ export default function ProductRow() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 border border-gray-200 border-t-0 rounded-b-md">
+            <div className="bg-white p-3 md:p-6 border border-gray-200 border-t-0 rounded-b-md">
 
                 {/* THE T-SHIRT ROW */}
                 <div className="flex flex-col md:flex-row gap-8">
 
                     {/* LEFT: CANVAS PREVIEW */}
-                    <div className="shrink-0 w-full md:w-[580px] h-[700px] bg-white relative border border-gray-200 rounded-lg overflow-hidden shadow-sm" id="canvas-wrapper">
+                    <div className="shrink-0 w-full md:w-[580px] md:h-[700px] bg-white relative border border-gray-200 rounded-lg overflow-hidden shadow-sm" id="canvas-wrapper">
                         <CanvasArea />
                     </div>
 
@@ -314,20 +314,20 @@ export default function ProductRow() {
 
             {/* FINAL SAVE BUTTON AREA */}
             <div className="mt-8 text-center space-y-3">
-                <div className="flex justify-center gap-4">
-                    <button onClick={onDeleteDesign} disabled={publishing} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+                    <button onClick={onDeleteDesign} disabled={publishing} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 md:px-8 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Delete
                     </button>
-                    <button onClick={onSave} disabled={publishing} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button onClick={onSave} disabled={publishing} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 md:px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         {publishing ? "Processing..." : "Publish"}
                     </button>
                 </div>
                 {tshirtDesigns?.length > 1 && (
-                    <div className="flex justify-center gap-4">
-                        <button onClick={() => { if(confirm(`Delete ALL ${tshirtDesigns.length} designs? This cannot be undone.`)) { if(canvas) canvas.clear(); while(tshirtDesigns.length > 0) { removeDesign(0); } } }} disabled={publishing} className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-8 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+                        <button onClick={() => { if(confirm(`Delete ALL ${tshirtDesigns.length} designs? This cannot be undone.`)) { if(canvas) canvas.clear(); while(tshirtDesigns.length > 0) { removeDesign(0); } } }} disabled={publishing} className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-5 md:px-8 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             DELETE ALL ({tshirtDesigns.length})
                         </button>
-                        <button onClick={onSaveAll} disabled={publishing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button onClick={onSaveAll} disabled={publishing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 md:px-12 rounded shadow-sm text-lg uppercase tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             {publishing ? "Processing..." : `PUBLISH ALL (${tshirtDesigns.length} designs)`}
                         </button>
                     </div>

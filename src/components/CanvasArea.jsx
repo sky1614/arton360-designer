@@ -249,6 +249,22 @@ export default function CanvasArea() {
       };
 
       fixOffset();
+
+      // Mobile: shrink the canvas display only (internal 600x700 stays the same)
+      const fitToWrapper = () => {
+        try {
+          const wrap = document.getElementById("canvas-wrapper");
+          if (!wrap) return;
+          const isMobile = window.innerWidth < 768;
+          const scale = isMobile ? Math.min(1, (wrap.clientWidth - 2) / 600) : 1;
+          c.setDimensions({ width: 600 * scale, height: 700 * scale }, { cssOnly: true });
+          c.calcOffset();
+          c.requestRenderAll();
+        } catch { }
+      };
+      fitToWrapper();
+      window.addEventListener("resize", fitToWrapper, { passive: true });
+      window.addEventListener("orientationchange", fitToWrapper);
       window.addEventListener("resize", fixOffset, { passive: true });
       window.addEventListener("scroll", fixOffset, { passive: true });
 

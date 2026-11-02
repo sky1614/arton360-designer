@@ -147,10 +147,10 @@ export default function DesignDetailsForm() {
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-8">
             {/* TeePublic-style Panel Container */}
-            <div className="bg-[#F3F4F6] border border-[#E5E7EB] rounded-xl p-8">
+            <div className="bg-[#F3F4F6] border border-[#E5E7EB] rounded-xl p-4 md:p-8">
 
                 {/* 2-Column Grid Wrapper */}
-                <div className="grid grid-cols-2 gap-x-16 gap-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
 
                     {/* --- LEFT COLUMN --- */}
                     <div>
